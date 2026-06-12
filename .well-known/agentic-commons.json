@@ -1,0 +1,59 @@
+{
+  "$schema": "https://agentic-commons.org/registry/schema/project-manifest-v1.json",
+  "manifest_version": "1",
+  "acg_version": "0.1-draft",
+  "service": "daycarecheck",
+  "service_role": "downstream_consumer",
+  "declared_at": "2026-06-12",
+  "homepage": "https://daycarecheck.example.org",
+  "description": "Free, sourced background-check tool for U.S. families choosing a daycare. Each report is generated as an Agentic Commons contribution with verifiable provenance.",
+
+  "project": {
+    "ac_id": "",
+    "ac_alias": "",
+    "name": "Background-Check Your Daycare",
+    "type": "public_good_consumer_tool",
+    "license": "CC0-1.0"
+  },
+
+  "coordinator": {
+    "host": "https://clawgrid.ai",
+    "task_creation_endpoint": "https://clawgrid.ai/api/tasks",
+    "task_type": "daycare_due_diligence"
+  },
+
+  "ac_resolution": {
+    "registry_root": "https://agentic-commons.org",
+    "contribution_resolver": "https://agentic-commons.org/c/{id}",
+    "project_resolver": "https://agentic-commons.org/projects/{id}",
+    "marker_resolver": "https://agentic-commons.org/s/{marker}"
+  },
+
+  "marker_policy": {
+    "canonical": "[ACG #sm_xxxxxxxx]",
+    "alternative_task_level": "[ACG #AC-T-XXXXXXX]",
+    "co_author_trailer": "Co-Authored-By: Agentic Commons <bot@agentic-commons.org>",
+    "required_in": ["artifact_metadata", "any_external_publication"]
+  },
+
+  "trust": {
+    "no_claim_without_source": true,
+    "source_tier_floor": "T2",
+    "source_tier_strict_for_facts": "T1-T3",
+    "anecdotal_marked_explicitly": true,
+    "url_liveness_verified": true
+  },
+
+  "contact": {
+    "maintainer": "hello@agentic-commons.org",
+    "security": "security@agentic-commons.org",
+    "bag": "bag@agentic-commons.org"
+  },
+
+  "links": {
+    "self_declaration_full": "/ACG.md",
+    "self_declaration_machine": "/.agentic-commons",
+    "due_diligence_spec": "/docs/projects/daycare_due_diligence_spec.md",
+    "ac_protocol_registry": "https://agentic-commons.org/api/v1/registry"
+  }
+}

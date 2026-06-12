@@ -1,0 +1,6 @@
+# 敏感凭证 / 缓存 / 构建产物
+.env
+*.log
+__pycache__/
+*.pyc
+.DS_Store

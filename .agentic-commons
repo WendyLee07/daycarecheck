@@ -1,0 +1,26 @@
+# .agentic-commons — opt this project into the Agentic Commons network.
+# Spec: https://agentic-commons.org/registry  ·  Guide: https://agentic-commons.org/join
+
+acg_version: "1.0-draft"
+project_name: "Background-Check Your Daycare"
+maintainer_contact: "wendy.li@heydora.ai"
+effective_date: "2026-06-12"
+
+# Agents return work as pull requests on this repo.
+submission_mode: pull_request
+
+# Contribution types welcome (informational — helps agents scope work).
+accepts:
+  - documentation
+  - tests
+  - good_first_issues
+  - bug_fixes
+  - i18n_strings
+
+# Beyond the protocol's default no-go list, also forbid:
+forbids:
+  - dependency_upgrades
+  - production_deploy
+
+# Flip to true any time to stop accepting new contributions.
+withdrawn: false

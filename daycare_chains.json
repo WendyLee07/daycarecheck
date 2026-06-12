@@ -1,0 +1,268 @@
+{
+  "_note": "Database of major US daycare chains: real owners + documented safety incidents. Every incident has an original source URL. Data collected 2026-06-12.",
+  "_source_caveat": "Most incidents occurred at the franchise / individual-employee level. Whether to attribute them to the parent company is the reader's judgment — we surface them so parents can see the chain's overall compliance history.",
+  "chains": [
+    {
+      "id": "kindercare",
+      "name": "KinderCare Learning Companies",
+      "aliases": ["KinderCare", "KinderCare Learning Center", "KCLC", "Crème School", "Champions"],
+      "parent": {
+        "owner": "Partners Group (Swiss private equity)",
+        "owner_type": "private_equity",
+        "owner_url": "https://www.partnersgroup.com",
+        "acquired": "Acquired by Partners Group in 2015. IPO'd on NYSE (ticker: KLC) on 2024-10-09; Partners Group remains the controlling shareholder.",
+        "source_url": "https://www.partnersgroup.com/en/news-and-views/press-releases/investment-news/detail?news_id=0eb1282e-892c-4d7b-b244-f5196e414fd7"
+      },
+      "scale": {
+        "locations": 1500,
+        "states": 40,
+        "states_note": "40 states + Washington DC (per CRS R48252)",
+        "employees": 43000,
+        "children": 200000,
+        "revenue_fy23": "$2.5B (net income $102.6M)",
+        "source_url": "https://www.congress.gov/crs-product/R48252"
+      },
+      "ceo_pay": "Per 2026 SEC DEF 14A: current CEO Tom Wyatt (since 2025-12-02) base salary $975K, with bonus targets ≥110% of base + equity awards ≥$4.25M. Predecessor Paul Thompson (CEO June 2024 – December 2025) reported FY24 cash compensation ~$2.1M (salary $779K + bonus $1.34M); equity grants added an additional ~$19.2M.",
+      "ceo_pay_source_url": "https://www.stocktitan.net/sec-filings/KLC/def-14a-kinder-care-learning-companies-inc-definitive-proxy-statement-cfb9aa725c4f.html",
+      "merkley_investigation": true,
+      "incidents": [
+        {
+          "date": "2024-08",
+          "location": "Oak Creek, Wisconsin",
+          "severity": "critical",
+          "summary": "An 11-month-old infant was picked up vomiting after a day at KinderCare. ER tests came back positive for cocaine. A drug-sniffing dog later found a baggie of cocaine in a worker's backpack inside the infant room. The same site also had prior violations: 'staff aggressive with infants,' undocumented injuries, and access to power tools and toxic chemicals.",
+          "source_url": "https://thebearcave.substack.com/p/problems-at-kindercare-learning-companies"
+        },
+        {
+          "date": "2024-08",
+          "location": "Location not disclosed in report",
+          "severity": "critical",
+          "summary": "A 3-year-old toddler was filmed escaping a KinderCare and walking into a busy street. A stranger found him and brought him to a nearby Labcorp office, which returned him to KinderCare. The family only learned the full story after passerby photos and video went viral.",
+          "source_url": "https://thebearcave.substack.com/p/problems-at-kindercare-learning-companies"
+        },
+        {
+          "date": "2024-01",
+          "location": "Wausau, Wisconsin",
+          "severity": "critical",
+          "summary": "Over 100 documented rule violations within 2.5 years led the state to issue a license-revocation letter. Violations included: caked food on walls, garbage and food on the floor, a child fed breast milk from another family, children left unsupervised. In one observed instance a staffer held a child down and sprayed him in the face with water for not sleeping at nap time. A separate staffer was fired after hitting a child on the head with a clipboard — never reported to CPS.",
+          "source_url": "https://wausaupilotandreview.com/2024/01/29/additional-details-emerge-in-kindercare-investigation/"
+        },
+        {
+          "date": "2025-08",
+          "location": "Plainfield, Indiana",
+          "severity": "high",
+          "summary": "Indiana FSSA inspectors found 5 violations including 1 critical. Findings: caregivers were inattentive; the director failed to report alleged abuse; caregivers sprayed children's heads and faces with a hose. Two staff members were placed on administrative leave.",
+          "source_url": "https://www.wthr.com/article/news/local/indiana-fssa-report-reveals-plainfield-kindercare-violated-health-and-safety-regulations/531-19d90dda-592d-4059-9b65-80326db615aa"
+        },
+        {
+          "date": "2025-08 (charged 2026-04)",
+          "location": "Raleigh, North Carolina",
+          "severity": "critical",
+          "summary": "Teacher Ashley Nicole Taris (24) was charged with felony child abuse causing serious bodily injury after forcing a child into a 'criss-cross applesauce' position with enough force to fracture his lower leg. NCDHHS subsequently required KinderCare to revise its behavior-guidance policy.",
+          "source_url": "https://www.wral.com/news/local/kindercare-worker-raleigh-child-abuse-charge-april-2026/"
+        },
+        {
+          "date": "2025",
+          "location": "Florence + Boone + Kenton, Kentucky",
+          "severity": "high",
+          "summary": "A mother told FOX19 the surveillance cameras at KinderCare 'weren't actually recording.' The investigation also surfaced two lawsuits in Boone and Kenton counties: one alleges a child fell at the Oakbrook location resulting in serious bodily injury (filed January); another alleges a child suffered an eye injury at the Fort Wright location and the parent was never told at pickup (filed May).",
+          "source_url": "https://www.fox19.com/2025/08/29/social-media-video-sparks-investigation-into-nky-daycare/"
+        },
+        {
+          "date": "2023-12 (cited 2024)",
+          "location": "Westfield, Indiana",
+          "severity": "high",
+          "summary": "Center cited for failing to report alleged child abuse to the Indiana Department of Child Services, failing to notify parents, and for a caregiver placing a 3-year-old in a crib as inappropriate discipline. FSSA placed the center on probation.",
+          "source_url": "https://www.wrtv.com/news/wrtv-investigates/state-cites-westfield-daycare-for-not-reporting-suspected-child-abuse-incident"
+        },
+        {
+          "date": "2024-12",
+          "location": "Wendell (Wake County), North Carolina",
+          "severity": "critical",
+          "summary": "Daycare staffer Tamika Fowler (47) was charged with multiple child-welfare violations after failing to notify the state of a child's death within the legally required 24 hours.",
+          "source_url": "https://abc11.com/post/separate-incidents-2-wake-county-daycare-workers-arrested-facing-charges/18858996/"
+        }
+      ]
+    },
+    {
+      "id": "learning_care_group",
+      "name": "Learning Care Group",
+      "aliases": ["La Petite Academy", "La Petite", "Childtime", "Tutor Time", "Everbrook Academy", "Children's Courtyard", "Montessori Unlimited"],
+      "parent": {
+        "owner": "American Securities (US private equity)",
+        "owner_type": "private_equity",
+        "owner_url": "https://www.american-securities.com/en/companies/learning-care-group",
+        "acquired": "Acquired by American Securities in 2014 (previously 60% owned by Morgan Stanley PE). Canada's Public Sector Pension Investment Board took a stake in 2018.",
+        "source_url": "https://www.american-securities.com/en/companies/learning-care-group"
+      },
+      "scale": {
+        "locations": 1100,
+        "states_note": "Second-largest for-profit child care provider in North America",
+        "headquarters": "Novi, Michigan",
+        "source_url": "https://www.merkley.senate.gov/merkley-launches-investigation-into-private-equity-ownership-of-child-care-centers/"
+      },
+      "merkley_investigation": true,
+      "incidents": [
+        {
+          "date": "2017-08",
+          "location": "Multiple states",
+          "severity": "critical",
+          "summary": "La Petite Academy faced 4 lawsuits after hiring Mark Mays, who was later convicted of child sexual abuse. Plaintiffs' attorneys argued that proper background checks would have surfaced his prior history.",
+          "source_url": "https://fox42kptm.com/news/local/2-more-lawsuits-filed-against-la-petite-academy"
+        },
+        {
+          "date": "2015-2025",
+          "location": "Georgia / Missouri / Texas + others",
+          "severity": "high",
+          "summary": "Cumulative health & safety violations across multiple Learning Care Group brands: children left unattended on buses, supervision failures, alleged physical abuse by staff. (Per Sen. Merkley's investigation announcement.)",
+          "source_url": "https://www.merkley.senate.gov/merkley-launches-investigation-into-private-equity-ownership-of-child-care-centers/"
+        },
+        {
+          "date": "2023",
+          "location": "Birmingham, Alabama",
+          "severity": "medium",
+          "summary": "FMLA lawsuit. The 11th Circuit reversed La Petite's win for the second time, finding the company couldn't prove it would have fired Candace Herren regardless of her FMLA leave request. Alabama state regulators had previously issued deficiency notices to the Birmingham facility.",
+          "source_url": "https://news.bloomberglaw.com/litigation/la-petite-directors-leave-interference-claim-revived-once-again"
+        }
+      ]
+    },
+    {
+      "id": "bright_horizons",
+      "name": "Bright Horizons",
+      "aliases": ["Bright Horizons Family Solutions", "Bright Horizons at Columbus Circle"],
+      "parent": {
+        "owner": "Bright Horizons Family Solutions (NYSE: BFAM, publicly traded)",
+        "owner_type": "public_company_ex_pe",
+        "owner_url": "https://www.brighthorizons.com",
+        "acquired": "Bain Capital + Goldman Sachs Merchant Banking acquired Bright Horizons for $1.3B in 2008 (47% premium over prior close). Bain used significant leverage — implied equity ~$1.27B but enterprise value $2.18B with $922M added debt. Re-IPO'd on NYSE (BFAM) in January 2013; Bain initially retained majority post-IPO.",
+        "source_url": "https://en.wikipedia.org/wiki/Bright_Horizons"
+      },
+      "scale": {
+        "employees": 31000,
+        "scope": "Global",
+        "source_url": "https://manhattanda.org/d-a-bragg-bright-horizons-day-care-workers-charged-with-abusing-mistreating-toddlers/"
+      },
+      "merkley_investigation": false,
+      "incidents": [
+        {
+          "date": "2025-07",
+          "location": "Columbus Circle, Manhattan, NYC",
+          "severity": "critical",
+          "summary": "Manhattan DA Alvin Bragg charged 3 former employees. Alleged conduct: employee Vargas placed packing tape across a toddler's mouth from ear to ear, leaving red marks; dragged toddlers by their arms multiple times; on three occasions dragged a toddler by the hair between rooms; hit toddlers in the head with metal water bottles. Employee Henley sprayed at least 2 toddlers in the face with cleaning solutions (soap and bleach mixed with water) and kept toddlers restrained in chairs for extended periods.",
+          "source_url": "https://manhattanda.org/d-a-bragg-bright-horizons-day-care-workers-charged-with-abusing-mistreating-toddlers/"
+        },
+        {
+          "date": "2025-10",
+          "location": "Columbus Circle, Manhattan, NYC (same location)",
+          "severity": "critical",
+          "summary": "A staff member put a bleach solution into children's water bottles. At least one child drank it. A teacher who also drank some on Oct 27 noticed something off and contacted poison control. The center surrendered its permit.",
+          "source_url": "https://www.cbsnews.com/newyork/news/bright-horizons-at-columbus-circle-day-care-water-pitcher-bleach/"
+        },
+        {
+          "date": "2024-07 to 2025-07",
+          "location": "13+ Bright Horizons centers, NYC",
+          "severity": "high",
+          "summary": "NYC Health Department received 47 complaints in one year across more than a dozen Bright Horizons centers. 18 (40%) were substantiated. Substantiated cases included: a child with a known cheese allergy suffering severe reaction due to staff inattention; staff 'aggressively' grabbing a child; a child wandering away to a locked gate found by a bystander; a child falling from a park structure while staff focused on others.",
+          "source_url": "https://dnyuz.com/2026/02/04/bright-horizons-child-care-centers-face-dozens-of-alarming-complaints/"
+        },
+        {
+          "date": "2024-08",
+          "location": "Nashville, Tennessee (Charlotte Avenue)",
+          "severity": "critical",
+          "summary": "Tennessee DHS found staff verbally and physically abusing children, with upper management aware but not reporting. Specific findings: children withheld food as punishment, children forced to sit in dirty diapers, director knew of suspected abuse but did not report to the state.",
+          "source_url": "https://www.wsmv.com/2024/08/27/bright-horizons-working-reopen-day-care-after-allegations-child-abuse/"
+        },
+        {
+          "date": "2024-01",
+          "location": "Plano, Texas (Legacy)",
+          "severity": "high",
+          "summary": "A toddler got hold of a staff member's vape pen and was photographed with smoke coming out of her mouth. Mother Jocelyn Carter was not informed for 8 days. Texas HHSC issued 4 citations in early 2024 plus 4 citations in 2019, including violations labeled 'Ensure No Child Abused, Neglected, or Exploited' and 'Report Suspected Child Abuse.'",
+          "source_url": "https://www.buttonlawfirm.com/news/wfaa-shares-details-of-blf-daycare-lawsuit-involving-toddler-who-was-poisoned-by-caregiver-s-vap.cfm"
+        }
+      ]
+    },
+    {
+      "id": "goddard_school",
+      "name": "The Goddard School",
+      "aliases": ["Goddard School", "Goddard Systems"],
+      "parent": {
+        "owner": "Sycamore Partners (US private equity)",
+        "owner_type": "franchise_pe",
+        "owner_url": "https://www.sycamorepartners.com",
+        "acquired": "Sycamore Partners acquired Goddard Systems Inc. on 2022-06-30 from Wind River Holdings. Shortly after the acquisition, Goddard issued ~$392M of asset-backed bonds collateralized by franchise agreements, royalties, and IP — a PE-typical leveraged dividend recap. Operating company is Goddard Systems Inc., HQ King of Prussia, PA.",
+        "source_url": "https://www.prnewswire.com/news-releases/sycamore-partners-acquires-goddard-systems-the-leading-franchisor-of-premium-early-education-centers-301579066.html"
+      },
+      "scale": {
+        "locations": 600,
+        "states": 37,
+        "children": 80000,
+        "note": "~600 franchises in 37 states + DC, serving 80,000+ children (per Sycamore Partners acquisition announcement, June 2022)"
+      },
+      "merkley_investigation": false,
+      "incidents": [
+        {
+          "date": "Court ruling 2025",
+          "location": "Wilton, Connecticut",
+          "severity": "critical",
+          "summary": "A judge ruled Goddard Systems Inc. could be liable for negligent hiring. Employee Amy Tingets had been dismissed from a previous daycare for misconduct involving children — Goddard never ran a background check. One week into her employment, a 6-month-old infant was rushed to the ICU and has suffered permanent injuries including developmental delays and seizures.",
+          "source_url": "https://www.davidwmartinlaw.com/blog/judge-declares-daycare-franchisees-negligence-in-hiring-led-to-an-employee-permanently-injuring-child/"
+        },
+        {
+          "date": "2018 (pre-Sycamore acquisition)",
+          "location": "Austin, Texas (FM 620 location)",
+          "severity": "high",
+          "summary": "An 11-month-old named Aiden suffered severe burns on both hands from a sun-heated playground door. His mother arrived to find him 'screaming at the top of his lungs' with large yellow blisters already forming. CPS investigation required Goddard to address the door. Discovery showed staff resorted to using laminated posters to cover the doors — 'they keep falling off.' Note: this incident occurred before Sycamore Partners acquired Goddard in June 2022.",
+          "source_url": "https://www.kvue.com/article/news/local/austin-daycare-sued-after-baby-severely-burns-both-hands/269-526801639"
+        }
+      ]
+    },
+    {
+      "id": "primrose_schools",
+      "name": "Primrose Schools",
+      "aliases": ["Primrose"],
+      "parent": {
+        "owner": "Roark Capital Group (Atlanta-based PE)",
+        "owner_type": "franchise_pe",
+        "owner_url": "https://www.roarkcapital.com",
+        "acquired": "Roark Capital acquired Primrose from American Capital on 2008-06-16, when Primrose had 182 franchise locations and ~$275M system-wide revenue. As of May 2024, Reuters reported Roark was exploring a sale of Primrose at ~$2B valuation. Roark also owns Subway, Arby's, Buffalo Wild Wings, Cinnabon, Carvel, Sonic, and Orange Theory.",
+        "source_url": "https://www.roarkcapital.com/files/Primrose-Press_Release.pdf"
+      },
+      "scale": {
+        "locations": 530,
+        "states": 34,
+        "note": "530+ franchised locations across 34 states + DC (per Wikipedia / Reuters May 2024 reporting)"
+      },
+      "merkley_investigation": false,
+      "incidents": [
+        {
+          "date": "Multiple years",
+          "location": "Multiple stores",
+          "severity": "high",
+          "summary": "State inspection records: staff 'restrained children by placing their legs over them at nap time'; on two occasions staff were sleeping when supposed to be supervising; the director failed to report allegations of abuse and neglect. One incident led Primrose to terminate the franchise agreement.",
+          "source_url": "https://www.the74million.org/zero2eight/the-end-user-is-a-dollar-sign-its-not-a-child-how-private-equity-and-shareholders-are-reshaping-american-child-care/"
+        }
+      ]
+    },
+    {
+      "id": "learning_experience",
+      "name": "The Learning Experience",
+      "aliases": ["TLE"],
+      "parent": {
+        "owner": "Harvest Partners (US private equity, majority); Golden Gate Capital (minority)",
+        "owner_type": "private_equity",
+        "owner_url": "https://www.harvestpartners.com",
+        "acquired": "Harvest Partners completed majority acquisition on 2025-07-01 from Golden Gate Capital. Golden Gate retains minority stake. Golden Gate previously owned the company since 2018 (its second PE owner). Per CEO Richard Weissman, the chain has worked with multiple PE owners 'over the past 20 years.'",
+        "source_url": "https://www.ropesgray.com/en/news-and-events/news/2025/07/harvest-partners-completes-acquisition-of-the-learning-experience"
+      },
+      "scale": {
+        "locations": 430,
+        "scope": "US + UK",
+        "note": "430+ centers in the US and UK (per Harvest Partners 2025 announcement)"
+      },
+      "merkley_investigation": false,
+      "incidents": [],
+      "incidents_note": "Our search (through 2026-06) surfaced no major published 2024-2026 incidents at this chain. This does not mean none occurred — only that none are prominently reported. Check your state licensing database for site-level records."
+    }
+  ],
+  "_unknown_lookup_advice": "If your daycare's name isn't in this list, it could be: (1) a true independent center; (2) a smaller PE roll-up not yet catalogued (e.g. Cadence Education, Endeavor Schools, Children of America, Action Day Primary Plus); or (3) church/school-district/nonprofit operated. Check the © Copyright line at the bottom of the daycare's website, your state's child care licensing database, and the daycare's privacy policy or terms of service."
+}

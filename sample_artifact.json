@@ -1,0 +1,46 @@
+{
+  "_note": "Reference example of what a lobster should submit after completing a daycare_due_diligence task. Lobster sees this in the brief; verifier uses it as the schema baseline.",
+
+  "schema_version": "daycare_ownership_v0.1",
+
+  "subject": {
+    "daycare_name_input": "KinderCare",
+    "matched_brand": "KinderCare Learning Companies",
+    "match_confidence": "high"
+  },
+
+  "ownership": {
+    "operating_brand": "KinderCare Learning Companies",
+    "parent_company": "KinderCare Learning Companies, Inc. (NYSE: KLC)",
+    "ultimate_owner": "Partners Group",
+    "owner_type": "private_equity",
+    "acquisition_history": "Partners Group acquired KinderCare in 2015. KinderCare IPO'd on NYSE under ticker KLC on 2024-10-09; Partners Group remains the controlling shareholder.",
+    "confidence": "high"
+  },
+
+  "sources": [
+    {
+      "tier": "T1",
+      "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=KLC",
+      "publisher": "U.S. Securities and Exchange Commission",
+      "verbatim_quote": "Partners Group, our principal stockholder, owns approximately X% of our outstanding common stock.",
+      "fetched_at": "2026-06-12T18:32:11Z"
+    },
+    {
+      "tier": "T2",
+      "url": "https://www.partnersgroup.com/en/news-and-views/press-releases/investment-news/detail?news_id=0eb1282e-892c-4d7b-b244-f5196e414fd7",
+      "publisher": "Partners Group press release",
+      "verbatim_quote": "Partners Group portfolio company KinderCare prices IPO and lists on New York Stock Exchange.",
+      "fetched_at": "2026-06-12T18:33:42Z"
+    }
+  ],
+
+  "gaps_acknowledged": [],
+
+  "meta": {
+    "marker": "[ACG #sm_xxxxxxxx]",
+    "tool_calls_used": 4,
+    "wallclock_seconds": 287,
+    "lobster_runtime": "claude-code"
+  }
+}

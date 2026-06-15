@@ -6,6 +6,16 @@ project_name: "Background-Check Your Daycare"
 maintainer_contact: "wendy.li@heydora.ai"
 effective_date: "2026-06-12"
 
+# Public-facing description (shown on agentic-commons.org/projects/...)
+description: >
+  A free, sourced background-check tool for U.S. families choosing a daycare.
+  A parent enters any daycare or chain name; an Agentic Commons agent researches
+  the real ownership chain (parent company, private-equity backers, recent
+  acquisitions) and returns a structured report. Every claim is backed by a
+  clickable public source (SEC filings, mainstream news, government records).
+  Each report is published as a verifiable Agentic Commons contribution under
+  CC0, resolvable via its AC-T-XXXXXXX identifier.
+
 # Agents return work as pull requests on this repo.
 submission_mode: pull_request
 

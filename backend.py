@@ -52,19 +52,30 @@ JWT_USER_EMAIL = os.environ.get("CLAWFORCE_USER_EMAIL", "wendy.li@heydora.ai")
 # `manus_qualified` EntityTag in the `agent_capability` category.
 CAPABILITY_TAGS = ["manus_qualified"]
 
-# Public URL where ClawGrid can reach us for task status webhooks (e.g.
-# task.completed, task.cancelled with reason=tag_pool_queue_expired). Set to
-# https://daycarecheck.agentic-commons.org in prod; for local dev leave unset
-# and ClawGrid will skip the webhook.
-DAYCARE_PUBLIC_URL = os.environ.get("DAYCARE_PUBLIC_URL") or None
-
-# Daycarecheck reports are published at this report URL pattern. Used both
-# for the report.html endpoint and as the link inserted into "your report
-# is ready" emails to the requester.
-REPORT_URL_TEMPLATE = (
-    (DAYCARE_PUBLIC_URL or "https://daycarecheck.agentic-commons.org")
-    + "/api/diligence/{task_id}/report.html"
+# Two URLs serve very different audiences:
+#
+#  - DAYCARE_WEBHOOK_URL  →  ClawGrid → daycarecheck callback path. Must
+#    point at the Cloud Run service directly (no proxy hop) so internal
+#    task.assigned / task.completed / task.cancelled webhooks are fast.
+#
+#  - DAYCARE_PUBLIC_URL   →  user-facing URLs (report links in emails,
+#    share buttons, etc.). Goes through the agentic-commons FastAPI
+#    reverse proxy so the user sees the friendly subdomain.
+#
+# Both default sensibly; in prod they're overridden via Cloud Run env vars.
+DAYCARE_WEBHOOK_URL = (
+    os.environ.get("DAYCARE_WEBHOOK_URL")
+    or "https://daycarecheck-969911375916.us-central1.run.app"
 )
+DAYCARE_PUBLIC_URL = (
+    os.environ.get("DAYCARE_PUBLIC_URL")
+    or "https://daycarecheck.agentic-commons.org"
+)
+
+# Report permalink template — used both for the report.html endpoint
+# response body links and as the URL inserted into "your report is ready"
+# emails to the requester.
+REPORT_URL_TEMPLATE = DAYCARE_PUBLIC_URL.rstrip("/") + "/api/diligence/{task_id}/report.html"
 
 # MailerSend (transactional email). Standard envs mirrored from clawforce.
 # Cloud Run picks these up from Secret Manager. If MAILERSEND_API_KEY is
@@ -1432,8 +1443,9 @@ a URL.
     # task.completed, task.cancelled+reason). Only set when we know our
     # public URL — local dev / port-forward scenarios get no webhooks and
     # rely on the SSE stream for status.
-    if DAYCARE_PUBLIC_URL:
-        body["webhook_url"] = f"{DAYCARE_PUBLIC_URL.rstrip('/')}/api/webhook/task-status"
+    # Webhook target must skip the agentic-commons proxy hop — ClawGrid
+    # internal callbacks go straight to the Cloud Run backend.
+    body["webhook_url"] = f"{DAYCARE_WEBHOOK_URL.rstrip('/')}/api/webhook/task-status"
     body.update({
         "structured_spec": {
             "internal_subtype": "daycare_background_check",
@@ -1814,7 +1826,7 @@ async def task_status_webhook(req: Request):
             task_id, email, result.success, result.skipped_reason,
         )
     else:  # is_expired
-        retry_url = (DAYCARE_PUBLIC_URL or "https://daycarecheck.agentic-commons.org") + "/"
+        retry_url = DAYCARE_PUBLIC_URL.rstrip("/") + "/"
         result = await send_no_agent_email(
             to_email=email, daycare_name=daycare_name, retry_url=retry_url,
         )

@@ -45,13 +45,34 @@ CLIENT_AGENT   = os.environ.get("CLAWFORCE_CLIENT_AGENT_ID", "4792107f-bc3c-4018
 JWT_USER_ID    = os.environ.get("CLAWFORCE_USER_ID", "56efe8ce-7278-4c99-9f2e-dffdc7222ef7")
 JWT_USER_EMAIL = os.environ.get("CLAWFORCE_USER_EMAIL", "wendy.li@heydora.ai")
 
-# When set, route all daycare-diligence tasks directly to this agent UUID
-# instead of dropping them into the public-good pool. Used for piloting a
-# specific lobster end-to-end before opening the firehose.
-DIRECT_AGENT_ID      = os.environ.get("DAYCARE_DIRECT_AGENT_ID") or None
-DIRECT_AGENT_DISPLAY = os.environ.get("DAYCARE_DIRECT_AGENT_DISPLAY") or None  # e.g. "david-zCrab"
-DIRECT_BUDGET        = os.environ.get("DAYCARE_DIRECT_BUDGET", "0.10")
-DIRECT_CURRENCY      = os.environ.get("DAYCARE_DIRECT_CURRENCY", "USDC")
+# Routing: every daycare-diligence task goes into the ClawGrid `tag_pool` so
+# the platform picks an idle, qualified Manus agent (queue when empty, auto
+# failover on agent death). We DO NOT pin a single agent — that was the old
+# DAYCARE_DIRECT_AGENT_ID antipattern. Agents qualify by carrying the
+# `manus_qualified` EntityTag in the `agent_capability` category.
+CAPABILITY_TAGS = ["manus_qualified"]
+
+# Public URL where ClawGrid can reach us for task status webhooks (e.g.
+# task.completed, task.cancelled with reason=tag_pool_queue_expired). Set to
+# https://daycarecheck.agentic-commons.org in prod; for local dev leave unset
+# and ClawGrid will skip the webhook.
+DAYCARE_PUBLIC_URL = os.environ.get("DAYCARE_PUBLIC_URL") or None
+
+# Daycarecheck reports are published at this report URL pattern. Used both
+# for the report.html endpoint and as the link inserted into "your report
+# is ready" emails to the requester.
+REPORT_URL_TEMPLATE = (
+    (DAYCARE_PUBLIC_URL or "https://daycarecheck.agentic-commons.org")
+    + "/api/diligence/{task_id}/report.html"
+)
+
+# MailerSend (transactional email). Standard envs mirrored from clawforce.
+# Cloud Run picks these up from Secret Manager. If MAILERSEND_API_KEY is
+# unset (e.g. local dev), emails are skipped with a structured log line
+# rather than crashing the request.
+MAILERSEND_API_KEY      = os.environ.get("MAILERSEND_API_KEY") or None
+MAILERSEND_FROM_EMAIL   = os.environ.get("MAILERSEND_FROM_EMAIL", "noreply@agentic-commons.org")
+MAILERSEND_FROM_NAME    = os.environ.get("MAILERSEND_FROM_NAME", "Daycare Check")
 
 CONFIG_DIR = Path.home() / ".config" / "clawforce"
 PRIV_KEY_PATH = Path(os.environ.get("CLAWFORCE_JWT_PRIVATE_KEY_PATH", CONFIG_DIR / "jwt_private_key.pem"))
@@ -1287,6 +1308,11 @@ app.add_middleware(
 class DiligenceRequest(BaseModel):
     daycare_name: str = Field(..., min_length=2, max_length=200)
     location_hint: str | None = Field(None, max_length=200)
+    # Required: where to send the finished report. We do not maintain a side
+    # store — the email goes into structured_spec.requester_email on the
+    # ClawGrid task itself so the webhook handler can read it back when the
+    # task finishes (any time in the next 24h).
+    email: str = Field(..., min_length=5, max_length=200)
 
 
 class DiligenceCreatedResponse(BaseModel):
@@ -1294,6 +1320,11 @@ class DiligenceCreatedResponse(BaseModel):
     ac_id: str | None
     alias: str | None
     status: str
+    # New: surface whether the task was dispatched immediately (assigned) or
+    # is sitting in the pool queue waiting for an idle Manus agent. Lets the
+    # frontend show different copy ("Researching now" vs "Waiting for an
+    # agent — we'll email you when it starts").
+    queued: bool = False
 
 
 @app.post("/api/diligence", response_model=DiligenceCreatedResponse)
@@ -1391,19 +1422,27 @@ a URL.
         "public_good_project_id": PROJECT_ID,
         "budget_max": "0",
         "publisher_agent_id": CLIENT_AGENT,
+        # tag_pool routing: ClawGrid selects from agents carrying
+        # manus_qualified EntityTag, queues if pool empty (24h TTL), and
+        # auto-failovers if the assigned agent goes offline before working.
+        "routing_mode": "tag_pool",
+        "required_capability_tags": CAPABILITY_TAGS,
     }
-    if DIRECT_AGENT_ID:
-        # Pilot mode: still a public-good task (escrow=0, QA verifier runs),
-        # but route directly to one specific lobster instead of the open pool.
-        # If clawgrid rejects this combination at validation, we fall back to
-        # post-create SQL stamping (TODO).
-        body["routing_mode"] = "direct"
-        body["direct_agent_id"] = DIRECT_AGENT_ID
+    # Tell ClawGrid where to POST status-change webhooks (task.assigned,
+    # task.completed, task.cancelled+reason). Only set when we know our
+    # public URL — local dev / port-forward scenarios get no webhooks and
+    # rely on the SSE stream for status.
+    if DAYCARE_PUBLIC_URL:
+        body["webhook_url"] = f"{DAYCARE_PUBLIC_URL.rstrip('/')}/api/webhook/task-status"
     body.update({
         "structured_spec": {
             "internal_subtype": "daycare_background_check",
             "daycare_name": req.daycare_name,
             "location_hint": req.location_hint,
+            # Stash the requester's email on the task so the webhook handler
+            # can email them when the task finishes (or expires after 24h).
+            # No side database needed — the task IS our persistence.
+            "requester_email": req.email,
             "report_dimensions": [
                 "licensing", "inspections", "violations",
                 "incidents", "ownership", "staff_signals",
@@ -1516,8 +1555,16 @@ a URL.
         raise HTTPException(r.status_code, detail=r.text[:400])
 
     j = r.json()
+    # tag_pool tasks land in either `assigned` (idle agent found at create
+    # time) or `queued` (pool empty — sweep worker will retry every minute,
+    # 24h TTL). Surface this so the frontend can show different copy.
+    _status = j.get("status") or ""
     return DiligenceCreatedResponse(
-        task_id=j["id"], ac_id=j.get("ac_id"), alias=j.get("alias"), status=j["status"]
+        task_id=j["id"],
+        ac_id=j.get("ac_id"),
+        alias=j.get("alias"),
+        status=_status,
+        queued=(_status == "queued"),
     )
 
 
@@ -1568,11 +1615,10 @@ async def stream_diligence(task_id: str):
                     "score": t.get("quality_score"),
                     "alias": t.get("alias"),
                     "ac_id": t.get("ac_id"),
-                    "assignee_display": (
-                        DIRECT_AGENT_DISPLAY
-                        if t.get("assignee_id") == DIRECT_AGENT_ID and DIRECT_AGENT_DISPLAY
-                        else None
-                    ),
+                    # ClawGrid populates assignee name on the task itself
+                    # when an agent is chosen (tag_pool dispatch); no need
+                    # to lookup against a hardcoded display map anymore.
+                    "assignee_display": t.get("assignee_name"),
                     "ts": datetime.now(timezone.utc).isoformat(),
                 }
 
@@ -1625,11 +1671,7 @@ async def get_diligence(task_id: str):
         "score": t.get("quality_score"),
         "alias": t.get("alias"),
         "ac_id": t.get("ac_id"),
-        "assignee_display": (
-            DIRECT_AGENT_DISPLAY
-            if t.get("assignee_id") == DIRECT_AGENT_ID and DIRECT_AGENT_DISPLAY
-            else None
-        ),
+        "assignee_display": t.get("assignee_name"),
         "artifact": artifact,
     }
 
@@ -1694,6 +1736,94 @@ async def download_report(task_id: str):
             "Cache-Control": "no-store",
         },
     )
+
+
+# ── ClawGrid task-status webhook ────────────────────────────────────────────
+# ClawGrid POSTs here when one of our submitted tasks changes status. Payload
+# shape (see clawforce _fire_webhook):
+#   {"task_id": "...", "status": "completed", "event": "task.completed",
+#    "reason": "tag_pool_queue_expired"  # optional, present on cancel/expire
+#   }
+#
+# We turn the two interesting transitions into transactional emails to the
+# requester (whose address is stashed on structured_spec.requester_email):
+#   - task.completed             → "your report is ready"
+#   - task.cancelled + reason=tag_pool_queue_expired → "no agent available"
+#
+# All other status changes are ignored. We always return 200 so ClawGrid
+# doesn't retry — failed email is logged but not surfaced as a webhook
+# failure (the user can still hit the permalink directly).
+
+
+@app.post("/api/webhook/task-status")
+async def task_status_webhook(req: Request):
+    """Receive a ClawGrid task status webhook and dispatch the right email."""
+    try:
+        payload = await req.json()
+    except Exception:
+        return JSONResponse({"ok": False, "error": "invalid_json"}, status_code=400)
+
+    task_id = payload.get("task_id")
+    event   = payload.get("event") or ""
+    reason  = payload.get("reason") or ""
+    if not task_id or not event:
+        return JSONResponse({"ok": False, "error": "missing_fields"}, status_code=400)
+
+    # We only care about two events. Anything else (task.assigned, etc.) is
+    # a no-op for the email pipeline but still returns 200.
+    is_completed   = event == "task.completed"
+    is_expired     = event == "task.cancelled" and reason == "tag_pool_queue_expired"
+    if not (is_completed or is_expired):
+        return JSONResponse({"ok": True, "ignored": event})
+
+    # Fetch the task to read requester_email + daycare_name from
+    # structured_spec. The webhook payload deliberately doesn't include
+    # them — keeping ClawGrid free of project-specific fields.
+    try:
+        r = await cf_request("GET", f"/api/tasks/{task_id}")
+        if r.status_code != 200:
+            log.warning(
+                "webhook_task_fetch_failed task_id=%s status=%s",
+                task_id, r.status_code,
+            )
+            return JSONResponse({"ok": True, "skipped": "task_fetch_failed"})
+        t = r.json()
+    except Exception:
+        log.exception("webhook_task_fetch_exception task_id=%s", task_id)
+        return JSONResponse({"ok": True, "skipped": "task_fetch_exception"})
+
+    spec = t.get("structured_spec") or {}
+    email = (spec.get("requester_email") or "").strip()
+    daycare_name = (spec.get("daycare_name") or t.get("title") or "your daycare").strip()
+    if not email:
+        log.info("webhook_no_email_on_task task_id=%s event=%s", task_id, event)
+        return JSONResponse({"ok": True, "skipped": "no_email"})
+
+    from mail_service import (
+        send_no_agent_email,
+        send_report_ready_email,
+    )
+
+    if is_completed:
+        report_url = REPORT_URL_TEMPLATE.format(task_id=task_id)
+        result = await send_report_ready_email(
+            to_email=email, daycare_name=daycare_name, report_url=report_url,
+        )
+        log.info(
+            "webhook_email_sent_completed task_id=%s to=%s success=%s skip=%s",
+            task_id, email, result.success, result.skipped_reason,
+        )
+    else:  # is_expired
+        retry_url = (DAYCARE_PUBLIC_URL or "https://daycarecheck.agentic-commons.org") + "/"
+        result = await send_no_agent_email(
+            to_email=email, daycare_name=daycare_name, retry_url=retry_url,
+        )
+        log.info(
+            "webhook_email_sent_expired task_id=%s to=%s success=%s skip=%s",
+            task_id, email, result.success, result.skipped_reason,
+        )
+
+    return JSONResponse({"ok": True})
 
 
 # ── Static frontend ──────────────────────────────────────────────────────────

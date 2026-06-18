@@ -1,7 +1,7 @@
 fastapi==0.115.6
 uvicorn[standard]==0.32.1
 httpx==0.28.1
-pydantic==2.10.3
+pydantic>=2.11.0,<3.0.0
 pyjwt[crypto]==2.10.1
 cryptography==44.0.0
 weasyprint==69.0

@@ -41,6 +41,130 @@
     text-align: center;
   }
 
+  /* === Hero eyebrow (brand voice) === */
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--alarm);
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  /* === Data source strip (trust signal) === */
+  .source-strip {
+    background: white;
+    border-top: 1px solid var(--edge);
+    border-bottom: 1px solid var(--edge);
+    padding: 24px 0;
+    overflow: hidden;
+  }
+  .source-strip-label {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .marquee {
+    overflow: hidden;
+    position: relative;
+  }
+  /* Soft fade on edges so cards don't visually pop in/out */
+  .marquee::before, .marquee::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 64px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .marquee::before {
+    left: 0;
+    background: linear-gradient(to right, white, rgba(255,255,255,0));
+  }
+  .marquee::after {
+    right: 0;
+    background: linear-gradient(to left, white, rgba(255,255,255,0));
+  }
+  .marquee-track {
+    display: flex;
+    gap: 36px;
+    align-items: center;
+    animation: marquee 50s linear infinite;
+    width: max-content;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
+  .logo-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    height: 56px;
+  }
+  .logo-card img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    filter: grayscale(100%) opacity(0.65);
+    transition: filter .2s;
+  }
+  .logo-card:hover img { filter: grayscale(0) opacity(1); }
+  .logo-card .label {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.25;
+  }
+  .logo-card .label .sub {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-top: 1px;
+  }
+  /* Text-only stamp cards (for sources with no PD logo) */
+  .logo-card.text-stamp {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 18px;
+    border-left: 1.5px solid var(--edge);
+    border-right: 1.5px solid var(--edge);
+    height: 56px;
+  }
+  .logo-card.text-stamp .big {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .logo-card.text-stamp .sm {
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    line-height: 1;
+  }
+
   /* === Hero === */
   .hero {
     max-width: 800px;
@@ -70,32 +194,52 @@
   .hero p {
     font-size: 17px;
     color: var(--muted);
-    max-width: 600px;
+    max-width: 760px;
     margin: 0 auto 24px;
   }
+  .hero p b { color: var(--ink); font-weight: 600; }
 
   .value-list {
-    max-width: 540px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
     margin: 0 auto 36px;
+    max-width: 800px;
     text-align: left;
   }
   .value-item {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid #d6d1c5;
-    font-size: 14px;
-    line-height: 1.55;
-    color: #333;
-  }
-  .value-item:last-child { border-bottom: none; }
-  .value-item b { color: var(--ink); }
-  .v-icon {
-    font-size: 18px;
-    flex-shrink: 0;
-    width: 24px;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+    background: white;
+    border: 1px solid #d6d1c5;
+    padding: 24px 16px;
+    transition: border-color .15s, transform .15s;
+  }
+  .value-item:hover { border-color: var(--ink); transform: translateY(-2px); }
+  .v-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+  .v-icon svg { width: 100%; height: 100%; display: block; }
+  .v-title {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .v-desc {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #555;
+  }
+  @media (max-width: 640px) {
+    .value-list { grid-template-columns: repeat(2, 1fr); }
   }
 
   /* === Search === */
@@ -103,18 +247,39 @@
     position: relative;
     max-width: 600px;
     margin: 0 auto 12px;
+    display: flex;
   }
   .search-box {
-    width: 100%;
+    flex: 1;
     padding: 18px 24px;
     font-size: 18px;
     font-family: 'IBM Plex Serif', serif;
     border: 2px solid var(--ink);
+    border-right: none;
     background: white;
     outline: none;
     transition: border-color .15s;
+    min-width: 0;
   }
   .search-box:focus { border-color: var(--alarm); }
+  .search-box:focus + .search-btn { border-color: var(--alarm); }
+  .search-btn {
+    padding: 0 28px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'IBM Plex Serif', serif;
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: white;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background .15s, border-color .15s;
+    flex-shrink: 0;
+  }
+  .search-btn:hover { background: #2a2a2a; }
+  @media (max-width: 480px) {
+    .search-btn { padding: 0 18px; font-size: 14px; }
+  }
 
   .suggest {
     position: absolute;
@@ -140,6 +305,28 @@
     font-size: 11px;
     color: var(--muted);
     margin-top: 2px;
+  }
+  .suggest-item .badge-source {
+    display: inline-block;
+    font-size: 9px;
+    background: var(--ink);
+    color: white;
+    padding: 1px 6px;
+    margin-left: 6px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+  .suggest-item.db-hit { background: #fdf6e3; }
+  .suggest-item.db-hit:hover { background: #fef3c7; }
+  .suggest-hint {
+    padding: 8px 24px;
+    font-size: 11px;
+    color: var(--muted);
+    background: #fafaf6;
+    border-bottom: 1px solid #eee;
+    letter-spacing: 0.5px;
   }
 
   .examples {
@@ -351,36 +538,396 @@
   }
   .cta .btn:hover { background: white; color: var(--ink); }
 
-  footer {
+  /* === Shared site chrome (topbar + footer) === */
+  .site-topbar {
+    background: white;
+    border-bottom: 1px solid var(--edge);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .site-brand {
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
+  }
+  .site-brand .brand-mark {
+    width: 28px;
+    height: 28px;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .site-brand .brand-mark .check { color: var(--alarm); }
+  .site-brand .brand-wordmark {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .site-brand .brand-wordmark .row1 {
+    font-family: 'IBM Plex Serif', Georgia, serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.2px;
+  }
+  .site-brand .brand-wordmark .row2 {
+    font-size: 9.5px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .site-brand:hover .brand-mark { color: var(--alarm); }
+  .site-nav { display: flex; gap: 18px; }
+  .site-nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .site-nav a:hover { color: var(--ink); }
+
+  .site-footer {
     background: #1a1a1a;
-    color: #888;
-    padding: 24px 20px;
-    text-align: center;
+    color: #b8b3a8;
+    padding: 28px 24px;
+    font-size: 12px;
+    line-height: 1.7;
+    margin-top: 40px;
+  }
+  .site-footer-inner { max-width: 800px; margin: 0 auto; }
+  .site-footer .disclaimer { color: #f5f1eb; margin-bottom: 8px; }
+  .site-footer .noconflict { margin-bottom: 8px; }
+  .site-footer .contact { margin-bottom: 16px; }
+  .site-footer .links {
+    padding-top: 16px;
+    border-top: 1px solid #2c2c2c;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
     font-size: 11px;
   }
-  footer a { color: #ccc; }
+  .site-footer .links .meta { color: #6e6960; margin-left: auto; }
+  .site-footer a { color: #d8c995; text-decoration: none; }
+  .site-footer a:hover { color: white; }
+
+  /* === About section === */
+  .about-section {
+    background: white;
+    border-top: 1px solid var(--edge);
+    padding: 72px 24px 60px;
+  }
+  .about-inner { max-width: 700px; margin: 0 auto; }
+  .about-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .about-headline {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: clamp(26px, 3.5vw, 32px);
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 28px;
+    color: var(--ink);
+  }
+  .about-headline em {
+    font-style: italic;
+    color: var(--alarm);
+  }
+  .about-body p {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 16px;
+  }
+  .about-body p:last-child { margin-bottom: 0; }
+  .about-body a {
+    color: var(--alarm);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .about-body a:hover { color: #7a1212; }
+  .about-aside {
+    color: var(--muted);
+    font-size: 14.5px;
+    font-style: italic;
+  }
+  .about-signoff {
+    margin-top: 26px !important;
+    padding-top: 18px;
+    border-top: 1px solid var(--edge);
+    color: var(--muted);
+    font-style: italic;
+  }
+  .about-signoff a { color: var(--muted); }
+
+  /* === FAQ section === */
+  .faq-section {
+    background: var(--paper);
+    border-top: 1px solid var(--edge);
+    padding: 64px 24px 60px;
+  }
+  .faq-inner { max-width: 700px; margin: 0 auto; }
+  .faq-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .faq-title {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: clamp(24px, 3.2vw, 30px);
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 28px;
+    color: var(--ink);
+  }
+  .faq-list details {
+    background: white;
+    border: 1px solid var(--edge);
+    margin-bottom: 10px;
+    padding: 0;
+    transition: border-color .12s;
+  }
+  .faq-list details:hover { border-color: #b8b3a8; }
+  .faq-list details[open] { border-color: var(--ink); }
+  .faq-list summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 22px;
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.4;
+  }
+  .faq-list summary::-webkit-details-marker { display: none; }
+  .faq-list summary::before {
+    content: "+";
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--muted);
+    flex-shrink: 0;
+    width: 16px;
+    font-weight: 400;
+    transition: transform .15s, color .15s;
+  }
+  .faq-list details[open] summary::before {
+    content: "−";
+    color: var(--alarm);
+  }
+  .faq-list .faq-answer {
+    padding: 0 22px 18px 50px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #444;
+  }
+  .faq-list .faq-answer a {
+    color: var(--alarm);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* === Live progress dot animation === */
+  @keyframes dots-anim {
+    0%, 80%, 100% { opacity: 0.25; }
+    40% { opacity: 1; }
+  }
+  .dots-anim {
+    display: inline-block;
+    margin-left: 6px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    animation: dots-anim 1.4s ease-in-out infinite;
+  }
+
+  /* === Formal report preview (live diligence) === */
+  .report-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 22px;
+    border: 1.5px solid var(--ink);
+    background: white;
+    color: var(--ink);
+    text-decoration: none;
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .report-btn:hover { background: var(--paper); }
+  .report-btn.primary { background: var(--ink); color: white; }
+  .report-btn.primary:hover { background: #2a2a2a; }
+
+  .exec-summary {
+    background: var(--paper);
+    border-left: 4px solid var(--ink);
+    padding: 16px 20px;
+    margin: 20px 0;
+  }
+  .exec-summary .exec-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .exec-summary p {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 8px 0 20px;
+  }
+  @media (max-width: 640px) {
+    .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .snapshot-tile {
+    background: white;
+    border: 1px solid #d6d1c5;
+    border-left-width: 4px;
+    padding: 14px 16px;
+  }
+  .snapshot-tile.tile-ok { border-left-color: var(--green); }
+  .snapshot-tile.tile-warn { border-left-color: var(--amber); }
+  .snapshot-tile.tile-bad { border-left-color: var(--alarm); }
+  .snapshot-tile.tile-neutral { border-left-color: #888; }
+  .tile-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .tile-icon { font-size: 16px; }
+  .tile-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .tile-value {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .snapshot-tile.tile-bad .tile-value { color: var(--alarm); }
+  .snapshot-tile.tile-warn .tile-value { color: var(--amber); }
+  .snapshot-tile.tile-ok .tile-value { color: var(--green); }
+  .tile-detail {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
 </style>
 </head>
 <body>
+
+<!-- Reusable SVG icon sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-shield-check" viewBox="0 0 32 32">
+    <path d="M16 3 L5 7 v9 c0 6 4.5 11.5 11 12 6.5-.5 11-6 11-12 V7 l-11-4 z"
+          fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path class="check" d="M11 16 l3.5 3.5 L22 12" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-clipboard-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3"/>
+    <rect x="9" y="3" width="6" height="4" rx="1"/>
+    <path d="M9 14l2 2 4-4"/>
+  </symbol>
+  <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/>
+  </symbol>
+  <symbol id="icon-globe-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <path d="M4 11h14M11 4c2 2 3 4.5 3 7s-1 5-3 7M11 4c-2 2-3 4.5-3 7s1 5 3 7"/>
+    <path d="M16.5 16.5L21 21"/>
+  </symbol>
+  <symbol id="icon-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="8" width="18" height="4" rx="1"/>
+    <path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/>
+    <path d="M12 8C8 8 7 4 9 3.5c1.5-.4 3 2 3 4.5zM12 8c4 0 5-4 3-4.5C13.5 3.1 12 5.5 12 8z"/>
+  </symbol>
+</svg>
+
+<header class="site-topbar">
+  <a class="site-brand" href="/">
+    <svg class="brand-mark" aria-hidden="true" viewBox="0 0 32 32"><use href="#icon-shield-check"/></svg>
+    <span class="brand-wordmark">
+      <span class="row1">Daycare Check</span>
+      <span class="row2">By Agentic Commons</span>
+    </span>
+  </a>
+  <nav class="site-nav">
+    <a href="/legal.html">Legal</a>
+  </nav>
+</header>
 
 <div class="banner">
   ⚠️ Transparent disclosure: All ownership data and incident summaries link to the original public source (court records, state regulators, named journalists). Data collected through 2026-06. Nothing fabricated or extrapolated.
 </div>
 
 <section class="hero">
-  <div class="hero-label">30-second daycare due diligence · free · sources cited</div>
-  <h1 class="serif">Before you sign,<br>run a <em>background check</em><br>on the daycare.</h1>
-  <p>Type a name. In 30 seconds, see what the open house won't tell you:</p>
+  <div class="hero-eyebrow">Before you sign</div>
+  <h1 class="serif">Know your daycare before you <em>trust</em> it.</h1>
+  <p>Your child can't tell you when something's off. We pull every <b>license action</b>, <b>inspection violation</b>, <b>court case</b>, and <b>real-owner</b> connection from public records — so you can spot what won't come up on the tour, <em>before</em> you sign.</p>
 
   <div class="value-list">
-    <div class="value-item"><span class="v-icon">⚠️</span> <b>State regulator citations</b> — when was the last report, and what for</div>
-    <div class="value-item"><span class="v-icon">📰</span> <b>Documented child incidents</b> — abuse, burns, runaways, poisoning. Every item linked to the original news story or court filing</div>
-    <div class="value-item"><span class="v-icon">🏢</span> <b>The real parent company</b> — is it private equity? What other brand names does it operate? (One owner can run six different storefronts under different signs.)</div>
-    <div class="value-item"><span class="v-icon">🔴</span> <b>Federal investigation status</b> — which chains are part of Sen. Merkley's congressional probe</div>
+    <div class="value-item">
+      <div class="v-icon"><svg viewBox="0 0 24 24"><use href="#icon-clipboard-check"/></svg></div>
+      <div class="v-title">Comprehensive background check</div>
+      <div class="v-desc">One report covers what's scattered across 5+ government sites, court records, and news archives.</div>
+    </div>
+    <div class="value-item">
+      <div class="v-icon"><svg viewBox="0 0 24 24"><use href="#icon-link"/></svg></div>
+      <div class="v-title">Every claim is sourced</div>
+      <div class="v-desc">Every fact links back to court filings, news articles, or state regulators. Nothing fabricated.</div>
+    </div>
+    <div class="value-item">
+      <div class="v-icon"><svg viewBox="0 0 24 24"><use href="#icon-globe-search"/></svg></div>
+      <div class="v-title">Any daycare, not just big chains</div>
+      <div class="v-desc">Local mom-and-pop not in our database? Public records get pulled live, then handed to you.</div>
+    </div>
+    <div class="value-item">
+      <div class="v-icon"><svg viewBox="0 0 24 24"><use href="#icon-gift"/></svg></div>
+      <div class="v-title">Free, no signup</div>
+      <div class="v-desc">No paywall, no account, no data collection. Built as a public good.</div>
+    </div>
   </div>
 
   <div class="search-wrap">
-    <input type="text" id="search" class="search-box" placeholder="Search the daycare you're considering, or its brand name..." autocomplete="off" />
+    <input type="text" id="search" class="search-box" placeholder="Search any U.S. daycare…" autocomplete="off" />
+    <button type="button" class="search-btn" onclick="searchSubmit()">Search</button>
     <div class="suggest" id="suggest"></div>
   </div>
 
@@ -389,10 +936,149 @@
   </div>
 </section>
 
+<div class="source-strip">
+  <div class="source-strip-label">Records sourced from public databases</div>
+  <div class="marquee">
+    <div class="marquee-track">
+      <!-- Cycle A — public-domain U.S. federal seals + text stamps -->
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Seal_of_the_United_States_Securities_and_Exchange_Commission.svg" alt="">
+        <span class="label">SEC EDGAR<span class="sub">filings</span></span>
+      </div>
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/54/Seal_of_the_United_States_Department_of_Justice.svg" alt="">
+        <span class="label">Federal court records<span class="sub">PACER · DoJ</span></span>
+      </div>
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Seal_of_the_United_States_Library_of_Congress.svg" alt="">
+        <span class="label">Congressional Research Service<span class="sub">Library of Congress</span></span>
+      </div>
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f0/Seal_of_the_United_States_Senate.svg" alt="">
+        <span class="label">U.S. Senate investigations<span class="sub">Sen. Merkley probe</span></span>
+      </div>
+      <div class="logo-card text-stamp">
+        <div class="big">50 STATES</div>
+        <div class="sm">licensing portals</div>
+      </div>
+      <div class="logo-card text-stamp">
+        <div class="big">NAEYC</div>
+        <div class="sm">accreditation</div>
+      </div>
+      <div class="logo-card text-stamp">
+        <div class="big">PRESS</div>
+        <div class="sm">mainstream archives</div>
+      </div>
+      <!-- Cycle B (duplicate, seamless loop) -->
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Seal_of_the_United_States_Securities_and_Exchange_Commission.svg" alt="">
+        <span class="label">SEC EDGAR<span class="sub">filings</span></span>
+      </div>
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/54/Seal_of_the_United_States_Department_of_Justice.svg" alt="">
+        <span class="label">Federal court records<span class="sub">PACER · DoJ</span></span>
+      </div>
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Seal_of_the_United_States_Library_of_Congress.svg" alt="">
+        <span class="label">Congressional Research Service<span class="sub">Library of Congress</span></span>
+      </div>
+      <div class="logo-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f0/Seal_of_the_United_States_Senate.svg" alt="">
+        <span class="label">U.S. Senate investigations<span class="sub">Sen. Merkley probe</span></span>
+      </div>
+      <div class="logo-card text-stamp">
+        <div class="big">50 STATES</div>
+        <div class="sm">licensing portals</div>
+      </div>
+      <div class="logo-card text-stamp">
+        <div class="big">NAEYC</div>
+        <div class="sm">accreditation</div>
+      </div>
+      <div class="logo-card text-stamp">
+        <div class="big">PRESS</div>
+        <div class="sm">mainstream archives</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <section class="result" id="result"></section>
 
-<footer>
-  Background-Check Your Daycare · v0 prototype · Sources: Congressional Research Service, Sen. Merkley investigation, state licensing data, court records, mainstream press · <a href="https://www.merkley.senate.gov/merkley-launches-investigation-into-private-equity-ownership-of-child-care-centers/" target="_blank">Background</a>
+<section class="about-section" id="about">
+  <div class="about-inner">
+    <div class="about-eyebrow">Why we made this</div>
+    <h2 class="about-headline">Your child can't tell you what <em>happened</em>. The record can.</h2>
+    <div class="about-body">
+      <p>For <b>40+ hours every week</b>, your child is somewhere you're not. Most parents make that choice based on a 45-minute tour, a Google review skim, and a gut feeling. The records that <em>actually</em> tell you what's been going on inside — <b>license history</b>, <b>inspection violations</b>, <b>court cases</b>, <b>real ownership</b> — exist, but they sit buried across 50+ government sites, court archives, and local news. Pulling it all together is a full-time job, and most parents don't have time before they have to decide.</p>
+      <p>So we built this. Type a daycare name. We pull from the <b>authoritative public sources</b> — state licensing portals, federal court records, inspection reports, SEC filings, NAEYC accreditation, mainstream press — and hand you back a report where every claim links to its original. <span class="about-aside">(The actual digging is done by AI agents on the Agentic Commons public-good network. They volunteer their surplus capacity for tasks like this.)</span></p>
+      <p><b>No ads. No signups. No daycare partnerships. No data sold.</b> Every report is <b>CC0 public domain</b> — copy it, share it with your partner, send it to the next parent on the waiting list. <em>If one report helps a family ask the right question before the wrong thing happens, that's the whole point.</em></p>
+      <p class="about-signoff">— The <a href="https://agentic-commons.org" target="_blank" rel="noopener">Agentic Commons</a> team</p>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div class="faq-eyebrow">FAQ</div>
+    <h2 class="faq-title">Questions parents ask first</h2>
+    <div class="faq-list">
+      <details>
+        <summary>What does a report actually contain?</summary>
+        <div class="faq-answer">
+          Six sections, all in plain English with every claim source-linked: <b>licensing status</b>, <b>state inspection history</b>, <b>substantiated violations</b>, <b>documented child-safety incidents</b>, <b>real ownership chain</b> (down to PE backers and franchise structure), and <b>staff signals</b> (Glassdoor, NAEYC accreditation). Everything that was scattered across 5+ state and federal databases, pulled into one page you can read in 3 minutes.
+        </div>
+      </details>
+      <details>
+        <summary>How is this different from Yelp, Google, or Care.com?</summary>
+        <div class="faq-answer">
+          When parents pick a daycare today, they usually end up cross-referencing 4–6 sites — Yelp and Google for review vibes, Care.com or ChildCareAware for listings, their state's licensing portal for compliance, a Google search for local news, sometimes Glassdoor for staff turnover. Each gives a slice. We don't stop at parent-review signal — we pull <b>state licensing data, federal court records, regulator inspections, SEC filings, NAEYC, and mainstream press</b> on top, then merge it all into one report you can actually read. The 4.8-star daycare with a Public Health Hazard citation in the state record? You'll see both.
+        </div>
+      </details>
+      <details>
+        <summary>Is the AI making things up?</summary>
+        <div class="faq-answer">
+          Every claim in every report has to link to its original public source — a state portal page, a court docket, a news article. An automated QA layer rejects any submission missing per-claim citations before you see it. If you spot something wrong, email <a href="mailto:support@agentic-commons.org">support@agentic-commons.org</a> with the report's <code>AC-T-XXX</code> alias and we update or withdraw within 5 business days.
+        </div>
+      </details>
+      <details>
+        <summary>Why is this free?</summary>
+        <div class="faq-answer">
+          Because it's a public-good project. The AI agents on the Agentic Commons network <b>volunteer their surplus capacity</b> — leftover compute they would otherwise have idle — toward tasks that benefit everyone, like daycare background checks. No one's writing them a check; no one's writing you a bill. We accept no ads, no daycare partnerships, no referral fees, and we don't sell data. Every report is CC0 public domain — copy, share, republish without attribution. The goal is more informed parents, not revenue.
+        </div>
+      </details>
+      <details>
+        <summary>Can you cover my local mom-and-pop daycare, not just big chains?</summary>
+        <div class="faq-answer">
+          Yes. Type any U.S. daycare name. If we have it pre-loaded (6 of the largest chains today), you'll see an instant report. If not, an AI agent will research it live — research time varies with how much public data exists for that specific daycare. Live coverage is the entire U.S.; pre-loaded coverage grows over time.
+        </div>
+      </details>
+      <details>
+        <summary>How do I actually use a report?</summary>
+        <div class="faq-answer">
+          Read it before you sign anything. Use the specific violation categories and incident dates as <b>concrete things to ask the director about</b> (vague answers are themselves a signal). Send the link to your partner or family group chat — every report is a permanent shareable URL. If a chain shows a pattern across multiple locations, weigh that even if your local one looks clean.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="disclaimer">
+      Reports combine public records with AI-assisted research and may contain errors. Always verify directly with the daycare and your state licensing agency before any childcare decision. Not legal advice.
+    </div>
+    <div class="noconflict">
+      We accept no ads, operator partnerships, referrals, or fees from any daycare, chain, or trade body. Reports are CC0 public goods.
+    </div>
+    <div class="contact">
+      Report an error or inaccuracy: <a href="mailto:support@agentic-commons.org">support@agentic-commons.org</a>
+    </div>
+    <div class="links">
+      <a href="/legal.html">Legal</a>
+      <a href="https://agentic-commons.org" target="_blank" rel="noopener">Powered by Agentic Commons ↗</a>
+      <span class="meta">Background-Check Your Daycare · v0</span>
+    </div>
+  </div>
 </footer>
 
 <script>
@@ -424,34 +1110,203 @@ async function load() {
   });
 
   const inp = document.getElementById('search');
-  inp.addEventListener('input', e => autocomplete(e.target.value));
+  let acTimer = null;
+  inp.addEventListener('input', e => {
+    // Free-form edit invalidates any previously-selected place context
+    if (selectedPlace) {
+      const expected = selectedPlace.location
+        ? `${selectedPlace.name} (${selectedPlace.location})`
+        : selectedPlace.name;
+      if (e.target.value !== expected) selectedPlace = null;
+    }
+    clearTimeout(acTimer);
+    const v = e.target.value;
+    acTimer = setTimeout(() => autocomplete(v), 220);
+  });
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
-      const items = document.querySelectorAll('.suggest-item');
-      const active = document.querySelector('.suggest-item.active') || items[0];
-      if (active) active.click();
+      e.preventDefault();
+      searchSubmit();
+    }
+  });
+
+  // Event delegation on dropdown — survives any escaping issue in
+  // OSM names / addresses that would break inline onclick handlers.
+  document.getElementById('suggest').addEventListener('click', e => {
+    const item = e.target.closest('.suggest-item');
+    if (!item) return;
+    const kind = item.dataset.kind;
+    if (kind === 'chain') {
+      showChain(item.dataset.chainId);
+    } else if (kind === 'place') {
+      searchFromPlace(item.dataset.name, item.dataset.location || '');
+    } else if (kind === 'live') {
+      runLiveDiligence(item.dataset.name);
     }
   });
 }
 
-function autocomplete(q) {
+// Last place picked from the Photon dropdown. Carries the address through
+// even if the user then hits Search instead of clicking the dropdown row.
+let selectedPlace = null;
+
+// Escape single-quotes + backslashes for safe inlining inside HTML onclick="..."
+function jsEscape(s) {
+  return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+let _photonAbortCtrl = null;
+async function fetchPlaces(q) {
+  try {
+    if (_photonAbortCtrl) _photonAbortCtrl.abort();
+    _photonAbortCtrl = new AbortController();
+    // Photon (komoot) — OSM-backed, free, no API key. Filtered to childcare POIs.
+    const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) +
+      '&limit=8&osm_tag=amenity:kindergarten&osm_tag=amenity:childcare&osm_tag=social_facility:child_care';
+    const r = await fetch(url, {signal: _photonAbortCtrl.signal});
+    if (!r.ok) return [];
+    const j = await r.json();
+    return (j.features || [])
+      .map(f => f.properties || {})
+      .filter(p => p.name)
+      .map(p => ({
+        name: p.name,
+        location: [p.housenumber, p.street, p.city, p.state].filter(Boolean).join(', '),
+        country: p.country || '',
+        osm_value: p.osm_value || '',
+      }))
+      .filter(p => !p.country || p.country === 'United States' || p.country === 'Canada');
+  } catch (e) {
+    return [];
+  }
+}
+
+// Parse "Name (Location)" form back into separate fields.
+// Handles whatever the user typed or what searchFromPlace wrote into the input.
+function parseQuery(q) {
+  const m = q.match(/^(.+?)\s*\((.+)\)\s*$/);
+  if (m) return {name: m[1].trim(), location: m[2].trim()};
+  return {name: q.trim(), location: null};
+}
+
+function searchSubmit() {
+  const raw = (document.getElementById('search').value || '').trim();
+  if (!raw) return;
+  document.getElementById('suggest').classList.remove('show');
+
+  // Determine name + location_hint:
+  //   1. If selectedPlace is set and input still matches its display → use it
+  //   2. Else parse "Name (Address)" form from input
+  //   3. Else treat whole input as name with no location
+  let name, location;
+  if (selectedPlace) {
+    const expected = selectedPlace.location
+      ? `${selectedPlace.name} (${selectedPlace.location})`
+      : selectedPlace.name;
+    if (raw === expected) {
+      name = selectedPlace.name;
+      location = selectedPlace.location;
+    }
+  }
+  if (name == null) {
+    const parsed = parseQuery(raw);
+    name = parsed.name;
+    location = parsed.location;
+  }
+
+  // If a location was specified, always go to live DD (chain-level DB report
+  // would discard the location specificity, which is the point of selecting
+  // a specific store).
+  if (location) {
+    runLiveDiligence(name, location);
+    return;
+  }
+
+  // No location → try DB exact match first (chain-level browse), else live DD.
+  const ql = name.toLowerCase();
+  const exact = SEARCH_INDEX.find(item => item.display.toLowerCase() === ql);
+  if (exact) {
+    showChain(exact.chain.id);
+  } else {
+    runLiveDiligence(name);
+  }
+}
+
+async function autocomplete(q) {
   const sg = document.getElementById('suggest');
-  if (!q.trim()) {
+  const trimmed = (q || '').trim();
+  if (trimmed.length < 2) {
     sg.classList.remove('show');
     return;
   }
-  const ql = q.toLowerCase();
-  const matches = SEARCH_INDEX.filter(item => item.display.toLowerCase().includes(ql)).slice(0, 8);
-  if (matches.length === 0) {
-    sg.innerHTML = `<div class="suggest-item" onclick="showNotFound('${q.replace(/'/g, "\\'")}')">"${q}" — not in our database</div>`;
-    sg.classList.add('show');
-    return;
-  }
-  sg.innerHTML = matches.map(m => {
+  const ql = trimmed.toLowerCase();
+
+  // 1) Instant: pre-loaded chain matches from our curated DB
+  const dbMatches = SEARCH_INDEX
+    .filter(item => item.display.toLowerCase().includes(ql))
+    .slice(0, 4);
+
+  // Render DB matches immediately while Photon is in flight
+  const renderDb = () => dbMatches.map(m => {
     const aliasNote = m.alias ? `<div class="alias-of">Part of: ${m.chain.name}</div>` : '';
-    return `<div class="suggest-item" onclick="showChain('${m.chain.id}')">${m.display}${aliasNote}</div>`;
+    return `<div class="suggest-item db-hit" data-kind="chain" data-chain-id="${m.chain.id}">
+      <span><b>${m.display}</b><span class="badge-source">In our reports</span></span>
+      ${aliasNote}
+    </div>`;
   }).join('');
+
+  if (dbMatches.length > 0) {
+    sg.innerHTML = renderDb() + '<div class="suggest-hint">Searching nearby locations…</div>';
+    sg.classList.add('show');
+  } else {
+    sg.innerHTML = '<div class="suggest-hint">Searching daycare locations…</div>';
+    sg.classList.add('show');
+  }
+
+  // 2) Async: query Photon for real-world daycare POIs (any name, any address)
+  const places = await fetchPlaces(trimmed);
+
+  // De-dup any place whose name + city already appears in dbMatches
+  const dbDisplaySet = new Set(dbMatches.map(m => m.display.toLowerCase()));
+  const placesFiltered = places.filter(p => !dbDisplaySet.has(p.name.toLowerCase())).slice(0, 6);
+
+  const placeHtml = placesFiltered.map(p => `
+    <div class="suggest-item place-hit" data-kind="place" data-name="${htmlAttr(p.name)}" data-location="${htmlAttr(p.location)}">
+      <div>${htmlText(p.name)}</div>
+      ${p.location ? `<div class="alias-of">${htmlText(p.location)}</div>` : ''}
+    </div>
+  `).join('');
+
+  // Final assembly
+  let html = renderDb() + placeHtml;
+  if (!html) {
+    // Nothing in DB and nothing on the map — offer free-form live check
+    html = `<div class="suggest-item" data-kind="live" data-name="${htmlAttr(trimmed)}">
+      Run a live background check on "<b>${htmlText(trimmed)}</b>"
+    </div>`;
+  }
+  sg.innerHTML = html;
   sg.classList.add('show');
+}
+
+// Minimal HTML escape helpers for data-* attrs and visible text.
+function htmlAttr(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function htmlText(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Selected a specific real-world place from the dropdown — always run a
+// location-specific live DD. We deliberately do NOT shortcircuit to a
+// chain-level DB report here: the user picked a SPECIFIC store, and the
+// chain card would discard that specificity.
+function searchFromPlace(name, location) {
+  selectedPlace = {name, location: location || null};
+  const display = location ? `${name} (${location})` : name;
+  document.getElementById('search').value = display;
+  document.getElementById('suggest').classList.remove('show');
+  runLiveDiligence(name, location || null);
 }
 
 function search(name) {
@@ -572,13 +1427,14 @@ function showNotFound(q) {
 }
 
 // ── Live agent diligence flow ─────────────────────────────────────────────
-async function runLiveDiligence(daycareName) {
+async function runLiveDiligence(daycareName, locationHint) {
   const el = document.getElementById('result');
+  const displayName = locationHint ? `${daycareName} (${locationHint})` : daycareName;
   el.innerHTML = `
     <div class="live-diligence" style="background:white;padding:32px;border:1px solid #d6d1c5">
       <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--alarm);font-weight:700;margin-bottom:8px">Live Agentic Commons Diligence</div>
-      <h2 style="font-family:'IBM Plex Serif',serif;font-size:22px;margin-bottom:18px">Researching: ${daycareName}</h2>
-      <div id="live-log" style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;color:#333;background:#fafaf6;padding:16px;border-left:3px solid var(--ink);min-height:180px"></div>
+      <h2 style="font-family:'IBM Plex Serif',serif;font-size:22px;margin-bottom:4px">Researching: ${displayName}</h2>
+      <div id="live-log" style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;color:#333;background:#fafaf6;padding:16px;border-left:3px solid var(--ink);min-height:180px;margin-top:18px"></div>
       <div id="live-result" style="margin-top:24px"></div>
     </div>
   `;
@@ -586,20 +1442,45 @@ async function runLiveDiligence(daycareName) {
   el.scrollIntoView({behavior:'smooth',block:'start'});
 
   const log = document.getElementById('live-log');
-  function append(msg, color='#333') {
+  // Latest "thinking" line keeps an animated `···` suffix until either:
+  //  (a) a new in-progress line is appended (the new line takes the dots),
+  //  (b) a confirmation / terminal line is appended (dots cleared).
+  // This is what makes the progress feel alive instead of frozen.
+  let lastDots = null;
+  function append(msg, color = '#333', opts = {}) {
     const ts = new Date().toLocaleTimeString();
-    log.innerHTML += `<div><span style="color:#999">[${ts}]</span> <span style="color:${color}">${msg}</span></div>`;
+    const div = document.createElement('div');
+    div.innerHTML = `<span style="color:#999">[${ts}]</span> <span style="color:${color}">${msg}</span>`;
+    if (lastDots) { lastDots.remove(); lastDots = null; }
+    if (opts.thinking) {
+      const dots = document.createElement('span');
+      dots.className = 'dots-anim';
+      dots.textContent = '···';
+      div.appendChild(dots);
+      lastDots = dots;
+    }
+    log.appendChild(div);
     log.scrollTop = log.scrollHeight;
   }
 
-  append('▸ Submitting task to ClawForce...', '#666');
+  // Statuses where the task is still being worked on — these get animated dots.
+  const IN_PROGRESS_STATUSES = new Set([
+    'queued', 'assigned', 'working', 'qa_checking', 'pending_acceptance', 'revising',
+  ]);
+
+  // Initial pre-create progress line so the user doesn't see a blank box
+  // while we POST /api/diligence.
+  append('Creating task', 'var(--muted)', {thinking: true});
 
   let task = null;
   try {
     const r = await fetch('/api/diligence', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({daycare_name: daycareName})
+      body: JSON.stringify({
+        daycare_name: daycareName,
+        location_hint: locationHint || null,
+      })
     });
     if (!r.ok) {
       const err = await r.text();
@@ -607,40 +1488,97 @@ async function runLiveDiligence(daycareName) {
       return;
     }
     task = await r.json();
-    append(`✓ Task created: <b>${task.alias || task.task_id}</b> (status: ${task.status})`, 'var(--green)');
-    append(`  → Resolvable at <a href="https://agentic-commons.org/c/${task.alias}" target="_blank" style="color:#1976d2">agentic-commons.org/c/${task.alias}</a>`);
+    append(`✓ Task created: <b>${task.alias || task.task_id}</b>`, 'var(--green)');
   } catch (e) {
     append(`✗ Network error: ${e.message}`, 'var(--alarm)');
     return;
   }
 
-  // Open SSE for live status
-  const evtSrc = new EventSource(`/api/diligence/${task.task_id}/stream`);
+  // Open SSE for live status. Construct URL via new URL() to avoid weird
+  // absolute-form path issues some browsers / proxies produce with relative
+  // paths (we observed `GET http://host:port/...` getting URL-encoded into
+  // the path on a user's request).
+  const sseUrl = new URL(`/api/diligence/${task.task_id}/stream`, location.origin).toString();
+  const oneShotUrl = new URL(`/api/diligence/${task.task_id}`, location.origin).toString();
+  const evtSrc = new EventSource(sseUrl);
 
-  const labels = {
-    'queued': '⏳ Queued — waiting for a Lobster',
-    'assigned': '🦞 Lobster claimed the task',
-    'working': '🔍 Lobster is researching ownership',
+  // Polling fallback: if SSE never fires `status` events within 8s, switch
+  // to plain GET polling every 5s until terminal state.
+  let lastStatus = '';
+  let pollTimer = null;
+  function startPolling(reason) {
+    try { evtSrc.close(); } catch (e) {}
+    if (pollTimer) return;
+    append(`⚠ ${reason} — switching to polling every 5s`, 'var(--amber)');
+    const tick = () => {
+      fetch(oneShotUrl).then(r => r.json()).then(d => {
+        if (d.status && d.status !== lastStatus) {
+          const lbl = renderLabel(d.status, d.assignee_display);
+          const extra = d.score != null ? ` (score: ${d.score})` : '';
+          append(`${lbl}${extra}`, '#333', {thinking: IN_PROGRESS_STATUSES.has(d.status)});
+          lastStatus = d.status;
+        }
+        if (['completed', 'failed', 'cancelled', 'partial_completed'].includes(d.status)) {
+          clearInterval(pollTimer);
+          if (d.status === 'completed' && d.artifact) {
+            renderLiveResult(d, daycareName);
+          } else {
+            append(`✗ Task ended in ${d.status}`, 'var(--alarm)');
+          }
+        }
+      }).catch(e => append(`poll error: ${e.message}`, 'var(--amber)'));
+    };
+    pollTimer = setInterval(tick, 5000);
+    tick();
+  }
+  // Arm a watchdog: if no status event arrives in 10s, presume SSE is broken
+  // for this client and start polling.
+  const sseWatchdog = setTimeout(() => {
+    if (!lastStatus) startPolling('no SSE events received in 10s');
+  }, 10000);
+
+  // Label templates — `{agent}` is replaced at render time with the agent's
+  // display name (e.g. "david-zCrab") if the backend included one in the SSE
+  // payload, otherwise it falls back to "agent".
+  const labelTemplates = {
+    'queued': '⏳ Queued — waiting for an agent',
+    'assigned': '🤝 {agent} claimed the task',
+    'working': '🔍 {agent} is researching',
     'qa_checking': '✅ Submitted — QA verifier running',
     'pending_acceptance': '👍 QA passed — auto-accepting',
-    'revising': '↻ Lobster is revising submission',
+    'revising': '↻ {agent} is revising submission',
     'revision_requested': '⚠ QA requested revision',
     'completed': '🎉 Done',
     'failed': '✗ Failed',
     'cancelled': '✗ Cancelled',
   };
+  function renderLabel(status, agentDisplay) {
+    const t = labelTemplates[status] || status;
+    return t.replace('{agent}', agentDisplay || 'agent');
+  }
+  // Backwards-compat name for the polling fallback that uses `labels[d.status]`
+  const labels = new Proxy({}, {get: (_, k) => labelTemplates[k]});
 
+  // De-dup: SSE auto-reconnects on transient blips and the backend resets
+  // last_status, so the same status would re-fire. Skip if we've already
+  // logged this status.
+  let lastLoggedStatus = '';
   evtSrc.addEventListener('status', (ev) => {
+    clearTimeout(sseWatchdog);
     const data = JSON.parse(ev.data);
-    const lbl = labels[data.status] || data.status;
-    let extra = '';
-    if (data.score != null) extra = ` (score: ${data.score})`;
-    append(`${lbl}${extra}`);
+    lastStatus = data.status;
+    if (data.status === lastLoggedStatus) return;
+    lastLoggedStatus = data.status;
+    const lbl = renderLabel(data.status, data.assignee_display);
+    const extra = data.score != null ? ` (score: ${data.score})` : '';
+    append(`${lbl}${extra}`, '#333', {thinking: IN_PROGRESS_STATUSES.has(data.status)});
   });
 
   evtSrc.addEventListener('final', (ev) => {
+    clearTimeout(sseWatchdog);
     const data = JSON.parse(ev.data);
     evtSrc.close();
+    if (pollTimer) clearInterval(pollTimer);
     if (data.status === 'completed' && data.artifact) {
       renderLiveResult(data, daycareName);
     } else {
@@ -649,59 +1587,159 @@ async function runLiveDiligence(daycareName) {
   });
 
   evtSrc.addEventListener('error', (ev) => {
-    evtSrc.close();
-    append(`⚠ Stream error — falling back to one-shot poll`, 'var(--amber)');
-    // fallback
-    fetch(`/api/diligence/${task.task_id}`).then(r=>r.json()).then(d=>{
-      if (d.status === 'completed' && d.artifact) renderLiveResult(d, daycareName);
-    });
+    clearTimeout(sseWatchdog);
+    if (!pollTimer) startPolling('SSE stream error');
   });
 
   evtSrc.addEventListener('timeout', () => {
+    clearTimeout(sseWatchdog);
+    if (pollTimer) clearInterval(pollTimer);
     evtSrc.close();
-    append(`⏱ Stream timed out (>6 min). Try opening the task on agentic-commons.org later.`, 'var(--amber)');
+    append(`⏱ Task timed out (>30 min). Try opening on agentic-commons.org later.`, 'var(--amber)');
   });
 }
 
+function buildTile(icon, label, cls, value, detail) {
+  return `
+    <div class="snapshot-tile tile-${cls}">
+      <div class="tile-head">
+        <span class="tile-icon">${icon}</span>
+        <span class="tile-label">${label}</span>
+      </div>
+      <div class="tile-value">${value}</div>
+      ${detail ? `<div class="tile-detail">${detail}</div>` : ''}
+    </div>
+  `;
+}
+
+function buildSnapshotTiles(item) {
+  const tiles = [];
+
+  // 1. License
+  const lic = item.licensing || {};
+  if (lic.data_available === false) {
+    tiles.push(buildTile('📋', 'License', 'neutral', 'No record', ''));
+  } else {
+    const status = (lic.status || 'unknown').toLowerCase();
+    const cls = status === 'active' ? 'ok' : (status === 'revoked' || status === 'expired' ? 'bad' : 'warn');
+    tiles.push(buildTile('📋', 'License', cls, status.toUpperCase(), lic.state_agency || ''));
+  }
+
+  // 2. Inspection
+  const ins = item.inspections || {};
+  if (ins.data_available === false) {
+    tiles.push(buildTile('🔎', 'Last inspection', 'neutral', 'No record', ''));
+  } else {
+    const outcome = (ins.outcome || 'unknown').toLowerCase();
+    const cls = outcome === 'clean' ? 'ok' : (outcome === 'violations' ? 'bad' : 'warn');
+    tiles.push(buildTile('🔎', 'Last inspection', cls, outcome.toUpperCase(), ins.last_inspection_date || ''));
+  }
+
+  // 3. Violations
+  const v = item.violations || {};
+  if (v.data_available === false) {
+    tiles.push(buildTile('⚠️', 'Violations (36mo)', 'neutral', '—', ''));
+  } else {
+    const n = v.total_substantiated_36mo || 0;
+    const cls = n >= 5 ? 'bad' : (n >= 1 ? 'warn' : 'ok');
+    tiles.push(buildTile('⚠️', 'Violations (36mo)', cls, `${n}`, n === 0 ? 'None substantiated' : 'substantiated'));
+  }
+
+  // 4. Incidents
+  const incs = item.incidents || [];
+  const critN = incs.filter(i => i.severity === 'critical').length;
+  const incCls = critN >= 1 ? 'bad' : (incs.length >= 1 ? 'warn' : 'ok');
+  const incDetail = critN >= 1 ? `${critN} critical` : (incs.length === 0 ? 'None on record' : 'documented');
+  tiles.push(buildTile('🚨', 'Incidents', incCls, `${incs.length}`, incDetail));
+
+  // 5. Ownership
+  const own = item.ownership_full || {};
+  const ownType = (own.owner_type || 'unknown').replace(/_/g, ' ');
+  tiles.push(buildTile('🏢', 'Ownership', 'neutral', ownType, own.ultimate_parent || own.direct_owner || ''));
+
+  // 6. Staff signal
+  const staff = item.staff_signals || {};
+  if (staff.data_available === false) {
+    tiles.push(buildTile('👥', 'Staff signal', 'neutral', 'No data', ''));
+  } else {
+    const naeyc = staff.naeyc_accredited === true ? '✓ NAEYC' : (staff.naeyc_accredited === false ? 'no NAEYC' : '');
+    const gd = staff.glassdoor_rating != null ? `${staff.glassdoor_rating}/5` : '';
+    const detail = [naeyc, gd].filter(Boolean).join(' · ');
+    const headline = staff.glassdoor_rating != null ? `${staff.glassdoor_rating} ⭐` : (staff.naeyc_accredited === true ? 'Accredited' : '—');
+    tiles.push(buildTile('👥', 'Staff signal', 'neutral', headline, detail));
+  }
+
+  return tiles.join('');
+}
+
 function renderLiveResult(data, daycareName) {
-  // Backend returns normalized artifact: {submission_marker, qa_score, primary, items}
-  // primary = first item with canonical fields (headline_owner, chain, sources, ...)
   const a = data.artifact || {};
   const item = a.primary || {};
+  const isFullReport = item._schema === 'full_report_v1';
 
-  const sourcesHtml = (item.sources || []).map(u => {
-    let host;
-    try { host = new URL(u).hostname.replace(/^www\./, ''); } catch { host = u; }
-    return `<li style="margin:6px 0"><a href="${u}" target="_blank" style="color:#1976d2;text-decoration:none">${host}</a> <span style="color:#888;font-size:11px;word-break:break-all">${u}</span></li>`;
-  }).join('');
+  const reportUrl = `/api/diligence/${data.task_id}/report.html`;
+  const downloadUrl = `/api/diligence/${data.task_id}/download`;
 
-  const priorParentHtml = item.prior_parent ? `
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #2c2c2c">
-      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:4px">Prior parent</div>
-      <div style="font-family:'IBM Plex Serif',serif;font-size:16px;color:#d4b8b8">${item.prior_parent.name}</div>
-      <div style="font-size:11px;color:#aaa;margin-top:4px;line-height:1.6">
-        ${item.prior_parent.acquired_at ? `acquired ${item.prior_parent.acquired_at}` : ''}
-        ${item.prior_parent.bankrupted_at ? ` · Chapter 11 filed ${item.prior_parent.bankrupted_at}` : ''}
-      </div>
-      ${item.prior_parent.current_status ? `<div style="font-size:11px;color:#aaa;margin-top:4px;font-style:italic">${item.prior_parent.current_status}</div>` : ''}
+  const ctaButtons = `
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+      <a class="report-btn primary" href="${reportUrl}" target="_blank">📄 View formal report</a>
+      <a class="report-btn" href="${downloadUrl}">⬇ Download PDF</a>
+    </div>
+  `;
+
+  const execText = item.executive_summary || item.ownership_summary;
+  const execHtml = execText ? `
+    <div class="exec-summary">
+      <div class="exec-label">Executive summary</div>
+      <p>${execText}</p>
     </div>
   ` : '';
 
-  const chainHtml = (item.chain || []).length > 0 ? `
-    <h3 class="section">Ownership chain <span class="count">${item.chain.length} levels · click any source to verify</span></h3>
-    ${item.chain.map((level, i) => `
-      <div class="incident high" style="background:#fff">
-        <div class="incident-head">
-          <span class="incident-meta">Level ${level.level || (i+1)}</span>
-        </div>
-        <p style="font-family:'IBM Plex Serif',serif;font-size:16px;margin-bottom:6px"><b>${level.entity || ''}</b></p>
-        ${level.role ? `<p style="font-size:13px;line-height:1.6;color:#444;margin-bottom:8px;font-style:italic">${level.role}</p>` : ''}
-        ${level.source_note ? `<p style="font-size:12px;color:#666;margin-bottom:8px">${level.source_note}</p>` : ''}
-        ${level.source_url ? `<div class="src">Source: <a href="${level.source_url}" target="_blank">${(()=>{try{return new URL(level.source_url).hostname;}catch{return level.source_url;}})()}</a></div>` : ''}
-      </div>
-    `).join('')}
+  const snapshotHtml = isFullReport ? `
+    <h3 class="section">At a glance <span class="count">6 dimensions · click "View formal report" for full sources</span></h3>
+    <div class="snapshot-grid">${buildSnapshotTiles(item)}</div>
   ` : '';
 
+  // Legacy fallback: when agent returns old ownership-only schema, show the
+  // owner card + chain + sources the way the old renderLiveResult did
+  let legacyHtml = '';
+  if (!isFullReport) {
+    const sourcesHtml = (item.sources || []).map(u => {
+      let host;
+      try { host = new URL(u).hostname.replace(/^www\./, ''); } catch { host = u; }
+      return `<li style="margin:6px 0"><a href="${u}" target="_blank" style="color:#1976d2;text-decoration:none">${host}</a> <span style="color:#888;font-size:11px;word-break:break-all">${u}</span></li>`;
+    }).join('');
+
+    const chainHtml = (item.chain || []).length > 0 ? `
+      <h3 class="section">Ownership chain <span class="count">${item.chain.length} levels</span></h3>
+      ${item.chain.map((level, i) => `
+        <div class="incident high" style="background:#fff">
+          <div class="incident-head"><span class="incident-meta">Level ${level.level || (i+1)}</span></div>
+          <p style="font-family:'IBM Plex Serif',serif;font-size:16px;margin-bottom:6px"><b>${level.entity || ''}</b></p>
+          ${level.role ? `<p style="font-size:13px;line-height:1.6;color:#444;margin-bottom:8px;font-style:italic">${level.role}</p>` : ''}
+          ${level.source_url ? `<div class="src">Source: <a href="${level.source_url}" target="_blank">${(()=>{try{return new URL(level.source_url).hostname;}catch{return level.source_url;}})()}</a></div>` : ''}
+        </div>
+      `).join('')}
+    ` : '';
+
+    legacyHtml = `
+      <div class="owner-card">
+        <div class="label">Real owner</div>
+        <div class="owner serif">${item.headline_owner || 'Unknown'}</div>
+        <div class="owner-meta">
+          ${item.ownership_type ? `<div><b>Type:</b> ${item.ownership_type}</div>` : ''}
+          ${item.acquisition_date ? `<div><b>Acquired:</b> ${item.acquisition_date}</div>` : ''}
+        </div>
+      </div>
+      ${chainHtml}
+      ${(item.sources || []).length > 0 ? `
+        <h3 class="section">All sources <span class="count">${item.sources.length} URL(s)</span></h3>
+        <div class="incident high"><ul style="margin-left:0;list-style:none;padding-left:0">${sourcesHtml}</ul></div>
+      ` : ''}
+    `;
+  }
+
+  const aliasDisplay = data.alias || data.task_id;
   const correctionHtml = item.note ? `
     <div style="background:#fef3c7;border-left:4px solid #d97706;padding:14px 18px;margin:16px 0;font-size:13px;line-height:1.6;color:#78350f">
       <div style="font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">⚠ QA-driven correction</div>
@@ -711,43 +1749,29 @@ function renderLiveResult(data, daycareName) {
 
   document.getElementById('live-result').innerHTML = `
     <div class="result-head" style="border-color:var(--green);background:#fff">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:6px">Verified by Agentic Commons · QA Score ${data.score}</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:6px">Verified by Agentic Commons · QA Score ${data.score != null ? data.score : '—'}</div>
       <h2>${item.daycare_name || daycareName}</h2>
-      <div class="aliases">Live diligence by Lobster · marker: <span class="mono" style="font-family:monospace">${a.submission_marker || ''}</span></div>
-
-      <div class="owner-card">
-        <div class="label">Real owner</div>
-        <div class="owner serif">${item.headline_owner || 'Unknown'}</div>
-        <div class="owner-meta">
-          ${item.ownership_type ? `<div><b>Type:</b> ${item.ownership_type}</div>` : ''}
-          ${item.ticker ? `<div><b>Ticker:</b> ${item.ticker}</div>` : ''}
-          ${item.acquisition_date ? `<div><b>Acquired:</b> ${item.acquisition_date}</div>` : ''}
-          ${item.summary_note ? `<div style="margin-top:10px;font-size:13px;line-height:1.6;color:#d4b8b8;font-style:italic">${item.summary_note}</div>` : ''}
-          ${priorParentHtml}
-          ${item.ownership_summary ? `<div style="margin-top:8px;font-style:italic;line-height:1.6">${item.ownership_summary}</div>` : ''}
-        </div>
-      </div>
+      <div class="aliases">Live background check${data.assignee_display ? ` by <b>${data.assignee_display}</b>` : ''} · marker: <span class="mono" style="font-family:monospace">${a.submission_marker || '—'}</span></div>
+      ${ctaButtons}
     </div>
+
+    ${execHtml}
 
     ${correctionHtml}
 
-    ${chainHtml}
+    ${snapshotHtml}
 
-    ${(item.sources || []).length > 0 ? `
-      <h3 class="section">All sources <span class="count">${item.sources.length} URL(s)</span></h3>
-      <div class="incident high">
-        <ul style="margin-left:0;list-style:none;padding-left:0">${sourcesHtml}</ul>
-      </div>
-    ` : ''}
+    ${legacyHtml}
 
     <div class="cta">
       <h3 class="serif">Provenance</h3>
       <div style="font-size:12px;opacity:.8;margin-bottom:14px;line-height:1.6">
-        Task ID: <span class="mono">${data.alias}</span><br>
-        Resolvable at: <a href="https://agentic-commons.org/c/${data.alias}" target="_blank" style="color:#9cd6ff">agentic-commons.org/c/${data.alias}</a>
+        Task ID: <span class="mono">${aliasDisplay}</span><br>
+        Resolvable at: <a href="https://agentic-commons.org/c/${aliasDisplay}" target="_blank" style="color:#9cd6ff">agentic-commons.org/c/${aliasDisplay}</a>
       </div>
-      <a class="btn" href="https://agentic-commons.org/c/${data.alias}" target="_blank">📜 View on Agentic Commons</a>
-      <a class="btn" onclick="navigator.clipboard.writeText(location.origin+location.pathname+'#live-'+data.task_id);this.innerText='✓ Copied'">📤 Copy share link</a>
+      <a class="btn" href="${reportUrl}" target="_blank">📄 View formal report</a>
+      <a class="btn" href="${downloadUrl}">⬇ Download PDF</a>
+      <a class="btn" href="https://agentic-commons.org/c/${aliasDisplay}" target="_blank">📜 View on Agentic Commons</a>
     </div>
   `;
 }

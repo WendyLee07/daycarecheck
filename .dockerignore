@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+README.md
+ACG.md
+brief_daycare_ownership.md
+sample_artifact.json
+setup_clawforce_side.md
+create_task.py
+*.log

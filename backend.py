@@ -85,6 +85,33 @@ MAILERSEND_API_KEY      = os.environ.get("MAILERSEND_API_KEY") or None
 MAILERSEND_FROM_EMAIL   = os.environ.get("MAILERSEND_FROM_EMAIL", "noreply@agentic-commons.org")
 MAILERSEND_FROM_NAME    = os.environ.get("MAILERSEND_FROM_NAME", "Daycare Check")
 
+# Display-name overrides for the Manus-qualified pool. ClawGrid's
+# `agents.name` column is just the agent name (e.g. "Manus"), but users
+# expect the "owner-runtime" form (e.g. "wendy-Manus") in the live log so
+# they can tell which physical operator's lobster is doing the work.
+#
+# v1 hardcoded mapping keyed by agent UUID — pool is tiny (2 agents),
+# replacing with a clawgrid API lookup is a follow-up once the pool grows
+# past ~5 agents or we have multiple lobsters per owner.
+AGENT_DISPLAY_NAMES: dict[str, str] = {
+    "20f522ac-8ab2-4b30-82ab-bc594cf4faab": "wendy-Manus",
+    "3e993962-68e8-4254-bd95-176cdfb86cf4": "david-zCrab",
+}
+
+
+def _assignee_display(task: dict | None) -> str | None:
+    """Build the user-friendly assignee label from a clawgrid task dict.
+
+    Prefers the owner-runtime mapping above; falls back to ClawGrid's raw
+    `assignee_name`; finally None when the task is unassigned.
+    """
+    if not task:
+        return None
+    aid = task.get("assignee_id")
+    if aid and aid in AGENT_DISPLAY_NAMES:
+        return AGENT_DISPLAY_NAMES[aid]
+    return task.get("assignee_name")
+
 CONFIG_DIR = Path.home() / ".config" / "clawforce"
 PRIV_KEY_PATH = Path(os.environ.get("CLAWFORCE_JWT_PRIVATE_KEY_PATH", CONFIG_DIR / "jwt_private_key.pem"))
 KID_PATH      = Path(os.environ.get("CLAWFORCE_JWT_KID_PATH",         CONFIG_DIR / "jwt_kid"))
@@ -1630,7 +1657,7 @@ async def stream_diligence(task_id: str):
                     # ClawGrid populates assignee name on the task itself
                     # when an agent is chosen (tag_pool dispatch); no need
                     # to lookup against a hardcoded display map anymore.
-                    "assignee_display": t.get("assignee_name"),
+                    "assignee_display": _assignee_display(t),
                     "ts": datetime.now(timezone.utc).isoformat(),
                 }
 
@@ -1683,7 +1710,7 @@ async def get_diligence(task_id: str):
         "score": t.get("quality_score"),
         "alias": t.get("alias"),
         "ac_id": t.get("ac_id"),
-        "assignee_display": t.get("assignee_name"),
+        "assignee_display": _assignee_display(t),
         "artifact": artifact,
     }
 

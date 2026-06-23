@@ -6,3 +6,4 @@ pyjwt[crypto]==2.10.1
 cryptography==44.0.0
 weasyprint==69.0
 mailersend>=2.0.0,<3.0.0
+google-cloud-storage>=2.18.0

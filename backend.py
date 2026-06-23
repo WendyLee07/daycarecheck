@@ -1351,6 +1351,15 @@ class DiligenceRequest(BaseModel):
     # ClawGrid task itself so the webhook handler can read it back when the
     # task finishes (any time in the next 24h).
     email: str = Field(..., min_length=5, max_length=200)
+    # Photon-resolved coordinates for the specific location. Required for
+    # cache lookup — we only cache reports keyed on (name, lat, lng), so a
+    # search without coords (user typed name + Enter) always runs live.
+    lat: float | None = Field(None, ge=-90, le=90)
+    lng: float | None = Field(None, ge=-180, le=180)
+    # User explicitly clicked "Refresh now" on a cached report. Skip the
+    # cache lookup, run a fresh diligence, replace the cached row when
+    # this run completes.
+    force_refresh: bool = False
 
 
 class DiligenceCreatedResponse(BaseModel):
@@ -1363,11 +1372,66 @@ class DiligenceCreatedResponse(BaseModel):
     # frontend show different copy ("Researching now" vs "Waiting for an
     # agent — we'll email you when it starts").
     queued: bool = False
+    # Cache hit: when true, this response is referencing a previously-run
+    # report (within the 14-day TTL) instead of a freshly-created task.
+    # The frontend skips the live SSE / email flow entirely and renders the
+    # report immediately, with a "Compiled X days ago · Refresh" badge.
+    cached: bool = False
+    # ISO timestamp of the cached report's original completion time.
+    # Drives the "compiled X days ago" copy. None on cache miss.
+    cached_at: str | None = None
 
 
 @app.post("/api/diligence", response_model=DiligenceCreatedResponse)
 async def create_diligence(req: DiligenceRequest):
-    """Create a daycare due diligence task on clawgrid. Returns task id + AC alias."""
+    """Create a daycare due diligence task on clawgrid. Returns task id + AC alias.
+
+    Before kicking off a new ClawGrid task, look up the per-location
+    cache (14-day TTL, GCS-backed). On a fresh hit, reference the
+    cached task directly so the frontend can render the report from
+    the existing artifact — no agent dispatch, no email, no waiting.
+    Misses + force_refresh fall through to the live flow as before.
+    """
+    # ── Cache lookup ─────────────────────────────────────────────────
+    # Cache requires precise lat/lng (the Photon-resolved location). A
+    # search without coordinates (user typed name + Enter) is exploratory
+    # and always runs live — we don't want to cache "KinderCare" the
+    # brand under whatever ambiguous location the agent ended up at.
+    if req.lat is not None and req.lng is not None and not req.force_refresh:
+        try:
+            from cache_service import get_cached
+            cached = get_cached(name=req.daycare_name, lat=req.lat, lng=req.lng)
+        except Exception:
+            log.warning("cache_lookup_failed", exc_info=True)
+            cached = None
+        if cached:
+            cached_task_id = cached.get("task_id")
+            # Defence-in-depth: verify the upstream task still exists. A
+            # cache row pointing at a deleted ClawGrid task is worse than
+            # a miss, so fall through to live in that edge case.
+            if cached_task_id:
+                check = await cf_request("GET", f"/api/tasks/{cached_task_id}")
+                if check.status_code == 200:
+                    t = check.json()
+                    log.info(
+                        "cache_hit task_id=%s age_seconds=%s name=%r lat=%s lng=%s",
+                        cached_task_id, cached.get("_cache_age_seconds"),
+                        req.daycare_name, req.lat, req.lng,
+                    )
+                    return DiligenceCreatedResponse(
+                        task_id=cached_task_id,
+                        ac_id=t.get("ac_id"),
+                        alias=t.get("alias"),
+                        status=t.get("status") or "completed",
+                        queued=False,
+                        cached=True,
+                        cached_at=cached.get("completed_at"),
+                    )
+                log.warning(
+                    "cache_hit_but_upstream_gone task_id=%s status=%s",
+                    cached_task_id, check.status_code,
+                )
+
     loc_clause = f" near {req.location_hint}" if req.location_hint else ""
     brief = f"""TASK: Produce a formal background-check report for the U.S. daycare \
 "{req.daycare_name}"{loc_clause}.
@@ -1482,6 +1546,11 @@ a URL.
             # can email them when the task finishes (or expires after 24h).
             # No side database needed — the task IS our persistence.
             "requester_email": req.email,
+            # Photon-resolved coordinates, persisted so the task.completed
+            # webhook handler can compute the cache key and write the row
+            # without recomputing or re-fetching anything.
+            "requester_lat": req.lat,
+            "requester_lng": req.lng,
             "report_dimensions": [
                 "licensing", "inspections", "violations",
                 "incidents", "ownership", "staff_signals",
@@ -1844,6 +1913,29 @@ async def task_status_webhook(req: Request):
     )
 
     if is_completed:
+        # Cache write — runs before the email so a slow MailerSend send
+        # never delays the cache being populated. Only write if the spec
+        # has Photon coordinates (otherwise we don't have a stable key).
+        lat = spec.get("requester_lat")
+        lng = spec.get("requester_lng")
+        if isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
+            try:
+                from cache_service import put_cached
+                put_cached(
+                    name=daycare_name,
+                    lat=float(lat), lng=float(lng),
+                    task_id=task_id,
+                    completed_at_iso=(
+                        t.get("completed_at")
+                        or t.get("updated_at")
+                        or datetime.now(timezone.utc).isoformat()
+                    ),
+                )
+            except Exception:
+                log.warning(
+                    "cache_write_failed task_id=%s", task_id, exc_info=True,
+                )
+
         report_url = REPORT_URL_TEMPLATE.format(task_id=task_id)
         result = await send_report_ready_email(
             to_email=email, daycare_name=daycare_name, report_url=report_url,

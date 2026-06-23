@@ -50,13 +50,13 @@ JWT_USER_EMAIL = os.environ.get("CLAWFORCE_USER_EMAIL", "wendy.li@heydora.ai")
 # failover on agent death). We DO NOT pin a single agent — that was the old
 # DAYCARE_DIRECT_AGENT_ID antipattern. Agents qualify by carrying the
 # `manus_qualified` EntityTag in the `agent_capability` category.
-# Capability tags an agent must carry to enter the daycarecheck dispatch
-# pool. Selection runs with tag_match_mode=all on the ClawGrid side, so an
-# agent must hold BOTH tags to be eligible. Decoupled from runtime brand
-# (was previously a single "manus_qualified" tag) — what we actually need
-# is a browser-capable agent + a top-tier LLM, independent of whether
-# it's Manus / Claude Code / Codex / something custom.
-CAPABILITY_TAGS = ["web_browse_playwright", "llm_advanced"]
+# Capability keys an agent must hold to enter the daycarecheck dispatch
+# pool. Selection runs with match_mode=all on the ClawGrid side, so an
+# agent must hold BOTH keys (rows in agent_capabilities) to be eligible.
+# Dot-namespaced format aligns with the platform's existing capability
+# convention (browser.patchright, network.residential, etc.) and is
+# decoupled from any specific runtime brand.
+CAPABILITY_KEYS = ["browser.playwright", "llm.advanced"]
 
 # Two URLs serve very different audiences:
 #
@@ -1534,7 +1534,7 @@ a URL.
         # manus_qualified EntityTag, queues if pool empty (24h TTL), and
         # auto-failovers if the assigned agent goes offline before working.
         "routing_mode": "tag_pool",
-        "required_capability_tags": CAPABILITY_TAGS,
+        "required_capability_keys": CAPABILITY_KEYS,
     }
     # Tell ClawGrid where to POST status-change webhooks (task.assigned,
     # task.completed, task.cancelled+reason). Only set when we know our

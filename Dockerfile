@@ -24,7 +24,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend.py mail_service.py cache_service.py index.html legal.html daycare_chains.json llms.txt ./
+COPY backend.py mail_service.py cache_service.py index.html legal.html daycare_chains.json llms.txt google6510bf36c4229bca.html ./
 COPY .well-known ./.well-known
 
 # Cloud Run injects PORT; default for local docker run.

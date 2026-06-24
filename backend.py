@@ -1963,6 +1963,77 @@ async def task_status_webhook(req: Request):
     return JSONResponse({"ok": True})
 
 
+# ── Pageview / UV telemetry ────────────────────────────────────────────────
+# Lightweight self-instrumented analytics. Frontend Daycarecheck.tsx fires
+# one POST /api/pv on mount + on SPA route changes.
+#
+# What we record (structured log line, no DB row):
+#   event=pageview
+#   visitor_hash   16-char sha256 of (ip, user-agent, UTC-date) — same
+#                  visitor on the same day hashes to the same value, so
+#                  COUNT(DISTINCT visitor_hash) per day = UV
+#   path           the SPA path string (e.g. "/", "/legal")
+#   referrer       document.referrer (clamped to 200 chars)
+#   country        from Cloudflare/GCLB header if present, else null
+#
+# What we DON'T record: raw IP, raw UA, email, daycare name, anything
+# that links a pageview back to an individual. GDPR-friendly.
+#
+# Querying later (Cloud Logging):
+#   gcloud run services logs read daycarecheck --region us-central1 \
+#     --format json | jq '.[]|select(.textPayload|contains("pageview_recorded"))'
+#   For UV count: parse visitor_hash, sort -u | wc -l.
+#   Long-term: set up a Cloud Logging sink → BigQuery for SQL.
+
+
+class PageViewRequest(BaseModel):
+    path: str = Field(..., max_length=200)
+    referrer: str | None = Field(None, max_length=200)
+
+
+@app.post("/api/pv")
+async def page_view(req: Request, body: PageViewRequest):
+    """Record one pageview into Cloud Logging.
+
+    Always returns 200 quickly — telemetry must never block UX. Errors
+    are swallowed and logged as warnings; the user's session keeps
+    flowing regardless.
+    """
+    try:
+        import hashlib
+        ip = (req.client.host if req.client else "") or ""
+        ua = req.headers.get("user-agent") or ""
+        # Daily UV bucket — same visitor visiting twice in the same UTC
+        # day hashes the same. Different day → different hash.
+        day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        visitor_hash = hashlib.sha256(f"{ip}|{ua}|{day}".encode("utf-8")).hexdigest()[:16]
+
+        # Optional country header set by Cloudflare / GCLB. We're behind
+        # GCLB so today these are usually absent — left here for future
+        # geo-aware reporting if we ever proxy through Cloudflare.
+        country = (
+            req.headers.get("cf-ipcountry")
+            or req.headers.get("x-appengine-country")
+            or None
+        )
+
+        # Structured log line so a Cloud Logging filter can pick it out:
+        #   resource.type=cloud_run_revision AND textPayload:"pageview_recorded"
+        log.info(
+            "pageview_recorded path=%r referrer=%r visitor_hash=%s country=%s ua_short=%r day=%s",
+            body.path[:200],
+            (body.referrer or "")[:200],
+            visitor_hash,
+            country or "-",
+            ua[:80],
+            day,
+        )
+    except Exception:
+        # Telemetry should never break a page load. Swallow + warn.
+        log.warning("pageview_record_failed", exc_info=True)
+    return JSONResponse({"ok": True})
+
+
 # ── Static frontend ──────────────────────────────────────────────────────────
 # Mount last so /api/* takes precedence
 

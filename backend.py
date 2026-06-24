@@ -2276,10 +2276,7 @@ async def sitemap_xml():
         f"<url><loc>{base}/</loc><lastmod>{today}</lastmod>"
         "<changefreq>daily</changefreq><priority>1.0</priority></url>"
     )
-    parts.append(
-        f"<url><loc>{base}/about.html</loc><changefreq>monthly</changefreq>"
-        "<priority>0.7</priority></url>"
-    )
+    # About content lives inline on the homepage at #about, no separate URL.
     parts.append(
         f"<url><loc>{base}/legal.html</loc><changefreq>monthly</changefreq>"
         "<priority>0.3</priority></url>"

@@ -129,12 +129,17 @@ def build_slug(*, name: str, city: str | None, state: str | None) -> str:
     so the same physical place always gets the same suffix.
     """
     def _slugify(s: str) -> str:
-        # ASCII-only, alphanumerics → hyphens. Strip leading/trailing/
-        # repeated hyphens. Cap length to keep URLs readable.
-        out = []
+        # ASCII-only, alphanumerics → hyphens. Decompose accented Latin
+        # chars (NFKD) and DROP the combining marks before scanning, so
+        # "crème" becomes "creme", not "cre-me" (the combining grave was
+        # being treated as a separator otherwise).
+        import unicodedata
+        decomposed = unicodedata.normalize("NFKD", s or "")
+        stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
+        out: list[str] = []
         prev_hyphen = True
-        for ch in (s or "").lower():
-            if ch.isalnum():
+        for ch in stripped.lower():
+            if ch.isascii() and ch.isalnum():
                 out.append(ch)
                 prev_hyphen = False
             elif not prev_hyphen:

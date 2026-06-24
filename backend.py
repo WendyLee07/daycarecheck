@@ -30,7 +30,7 @@ from typing import Any
 import jwt
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse, FileResponse, HTMLResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -103,6 +103,36 @@ AGENT_DISPLAY_NAMES: dict[str, str] = {
     "20f522ac-8ab2-4b30-82ab-bc594cf4faab": "wendy-Manus",
     "3e993962-68e8-4254-bd95-176cdfb86cf4": "david-zCrab",
 }
+
+
+def _extract_city_state(
+    spec: dict | None,
+    task: dict | None,
+) -> tuple[str | None, str | None]:
+    """Best-effort city + state extraction from a task's structured_spec
+    and (optionally) the original ClawGrid task dict.
+
+    Order of preference:
+      1. ``spec.location_hint`` — Photon-resolved string we ourselves sent
+         when the user picked a suggestion. Format like "123 Main St,
+         Brooklyn, New York" — last two comma parts are usually city + state.
+      2. Anything in the artifact's practical_info (not always available
+         when this runs — webhook may fire before normalization).
+    Returns (city, state); either may be None.
+    """
+    spec = spec or {}
+    raw = (spec.get("location_hint") or "").strip()
+    if raw:
+        # Split on commas, strip each piece. We expect "[street,] city, state[, country]".
+        parts = [p.strip() for p in raw.split(",") if p.strip()]
+        # Strip a "United States" / "USA" trailing token if present.
+        if parts and parts[-1].lower() in ("united states", "usa", "us"):
+            parts = parts[:-1]
+        if len(parts) >= 2:
+            return parts[-2], parts[-1]
+        if len(parts) == 1:
+            return parts[0], None
+    return None, None
 
 
 def _assignee_display(task: dict | None) -> str | None:
@@ -1134,6 +1164,7 @@ def render_report_html(
     task_id: str,
     alias: str | None,
     qa_score: int | None,
+    slug: str | None = None,
 ) -> str:
     """Render a formal HTML background-check report from the normalized artifact."""
     primary = normalized_artifact.get("primary") or {}
@@ -1186,11 +1217,91 @@ def render_report_html(
         if alias else "—"
     )
 
+    # ── SEO head ─────────────────────────────────────────────────────
+    # Title + meta description: what Google shows in search results.
+    # Keep title under 60 chars where possible (Google truncates beyond);
+    # description under 160. Both must include the daycare name + city
+    # for keyword match on local searches.
+    seo_title = f"{daycare_name}"
+    if location:
+        seo_title += f" — {location}"
+    seo_title += " · Background Check Report"
+    seo_title = seo_title[:120]
+
+    # Pull a short summary fact-set for the meta description. Order of
+    # preference: explicit summary → ownership → inspection note → fallback.
+    desc_seed = (
+        exec_summary
+        or primary.get("ownership_summary")
+        or primary.get("summary_note")
+        or ""
+    )
+    seo_desc = (
+        f"Public-record background check for {daycare_name}"
+        f"{f' in {location}' if location else ''}. "
+        f"Licensing, inspection violations, ownership chain, "
+        f"and full source citations."
+    )
+    if desc_seed:
+        # Use the artifact's own one-liner if it's tighter than the boilerplate.
+        snip = " ".join(desc_seed.split())[:200]
+        if snip:
+            seo_desc = snip
+    seo_desc = seo_desc.replace('"', "'").strip()[:300]
+
+    # Canonical URL — points back at the slug route so all share / search
+    # traffic consolidates on one URL even when someone hits the legacy
+    # /api/diligence/{id}/report.html form.
+    public_base = (DAYCARE_PUBLIC_URL or "https://daycarecheck.agentic-commons.org").rstrip("/")
+    canonical_url = (
+        f"{public_base}/r/{slug}" if slug
+        else f"{public_base}/api/diligence/{task_id}/report.html"
+    )
+
+    # JSON-LD ChildCare schema. Each property only included when the
+    # underlying data is present; missing fields are dropped rather than
+    # filled with defaults that could mislead a search engine.
+    pi = primary.get("practical_info") or {}
+    ld = {
+        "@context": "https://schema.org",
+        "@type": "ChildCare",
+        "name": daycare_name,
+        "url": canonical_url,
+    }
+    if location:
+        ld["address"] = location
+    operator_name = (primary.get("ownership_full") or {}).get("direct_owner") or primary.get("headline_owner")
+    if operator_name:
+        ld["parentOrganization"] = {"@type": "Organization", "name": operator_name}
+    if (pi or {}).get("website_url"):
+        ld["sameAs"] = [pi["website_url"]]
+    import json as _json
+    ld_json = _json.dumps(ld, ensure_ascii=False, separators=(",", ":"))
+
+    seo_head = (
+        f'<title>{_esc(seo_title)}</title>\n'
+        f'<meta name="description" content="{_esc(seo_desc)}">\n'
+        f'<link rel="canonical" href="{_esc(canonical_url)}">\n'
+        f'<meta name="robots" content="index, follow">\n'
+        # Open Graph — controls preview cards on FB / LinkedIn / Slack / iMessage.
+        f'<meta property="og:type" content="article">\n'
+        f'<meta property="og:title" content="{_esc(seo_title)}">\n'
+        f'<meta property="og:description" content="{_esc(seo_desc)}">\n'
+        f'<meta property="og:url" content="{_esc(canonical_url)}">\n'
+        f'<meta property="og:site_name" content="Daycare Check">\n'
+        # Twitter card — same metadata, separate vocabulary.
+        f'<meta name="twitter:card" content="summary_large_image">\n'
+        f'<meta name="twitter:title" content="{_esc(seo_title)}">\n'
+        f'<meta name="twitter:description" content="{_esc(seo_desc)}">\n'
+        f'<script type="application/ld+json">{ld_json}</script>\n'
+    )
+
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Daycare Background Check — {_esc(daycare_name)}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{seo_head}
 <style>{REPORT_CSS}</style>
 </head>
 <body>
@@ -1810,11 +1921,33 @@ async def _fetch_report_html(task_id: str) -> tuple[str, str]:
     if not normalized:
         raise HTTPException(500, detail="artifact normalization failed")
 
+    # Find the slug for this task by looking up the cache key derived from
+    # name+coords (we cached it on completion). Best-effort — if it's not
+    # in the cache (e.g. legacy task without lat/lng) the report falls
+    # back to the UUID URL as canonical.
+    spec = t.get("structured_spec") or {}
+    slug_for_canonical: str | None = None
+    try:
+        from cache_service import get_cached
+        lat = spec.get("requester_lat")
+        lng = spec.get("requester_lng")
+        primary_for_lookup = normalized.get("primary") or {}
+        cache_name = primary_for_lookup.get("daycare_name") or spec.get("daycare_name")
+        if cache_name and isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
+            row = get_cached(name=cache_name, lat=float(lat), lng=float(lng))
+            if row:
+                slug_for_canonical = row.get("slug")
+    except Exception:
+        log.warning(
+            "slug_lookup_for_canonical_failed task_id=%s", task_id, exc_info=True,
+        )
+
     html = render_report_html(
         normalized,
         task_id=task_id,
         alias=t.get("alias"),
         qa_score=t.get("quality_score"),
+        slug=slug_for_canonical,
     )
 
     # Build safe filename slug from daycare name
@@ -1922,12 +2055,22 @@ async def task_status_webhook(req: Request):
         # Cache write — runs before the email so a slow MailerSend send
         # never delays the cache being populated. Only write if the spec
         # has Photon coordinates (otherwise we don't have a stable key).
+        # Also derives city/state from either the location_hint string or
+        # the artifact's practical_info; persisted so /r/{slug} pages can
+        # render rich meta tags without a second ClawGrid lookup.
         lat = spec.get("requester_lat")
         lng = spec.get("requester_lng")
+        slug_for_email: str | None = None
         if isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
             try:
+                # Best-effort city/state extraction. location_hint comes from
+                # Photon ("123 Main St, Brooklyn, New York") so the last two
+                # comma-separated parts are usually city + state. If the
+                # artifact carries a structured location string we prefer
+                # that. Failures are non-fatal — slug still works without.
+                city, state = _extract_city_state(spec, t)
                 from cache_service import put_cached
-                put_cached(
+                slug_for_email = put_cached(
                     name=daycare_name,
                     lat=float(lat), lng=float(lng),
                     task_id=task_id,
@@ -1936,13 +2079,23 @@ async def task_status_webhook(req: Request):
                         or t.get("updated_at")
                         or datetime.now(timezone.utc).isoformat()
                     ),
+                    city=city,
+                    state=state,
                 )
             except Exception:
                 log.warning(
                     "cache_write_failed task_id=%s", task_id, exc_info=True,
                 )
 
-        report_url = REPORT_URL_TEMPLATE.format(task_id=task_id)
+        # Prefer the slug URL in the email so users sharing the link in
+        # text / chat / social get something readable instead of a UUID.
+        # Fallback to the legacy task_id URL if slug unavailable.
+        if slug_for_email:
+            report_url = (
+                DAYCARE_PUBLIC_URL.rstrip("/") + f"/r/{slug_for_email}"
+            )
+        else:
+            report_url = REPORT_URL_TEMPLATE.format(task_id=task_id)
         result = await send_report_ready_email(
             to_email=email, daycare_name=daycare_name, report_url=report_url,
         )
@@ -2032,6 +2185,102 @@ async def page_view(req: Request, body: PageViewRequest):
         # Telemetry should never break a page load. Swallow + warn.
         log.warning("pageview_record_failed", exc_info=True)
     return JSONResponse({"ok": True})
+
+
+# ── SEO: slug-based public report URLs ─────────────────────────────────────
+# /r/{slug} is the canonical public URL for a completed report (used in
+# emails + social shares). Friendly slugs like
+# /r/cadence-academy-preschool-portland-or-a1b2 → looked up in the GCS
+# slug index → resolves to the underlying task_id → renders the same HTML
+# as /api/diligence/{task_id}/report.html.
+#
+# Why a separate route instead of redirecting to the legacy URL:
+#   - Search engines treat the slug URL as the canonical (it's what's in
+#     the sitemap + the meta canonical tag); a 302 to a UUID URL leaks
+#     ranking value to the UUID form.
+#   - Sharing on Reddit / FB / Slack shows the slug URL preview directly,
+#     which carries semantic info ("oh that's the Cadence Academy report").
+
+
+@app.get("/r/{slug}", response_class=HTMLResponse)
+async def view_report_by_slug(slug: str):
+    """SEO-friendly public report URL. Looks up slug in cache index,
+    renders the same HTML as the legacy /api/diligence/{id}/report.html
+    endpoint with a canonical link back to itself."""
+    try:
+        from cache_service import get_by_slug
+        row = get_by_slug(slug)
+    except Exception:
+        log.warning("slug_lookup_failed slug=%s", slug, exc_info=True)
+        row = None
+    if not row or not row.get("task_id"):
+        raise HTTPException(404, detail="report not found")
+    html, _ = await _fetch_report_html(row["task_id"])
+    return HTMLResponse(content=html)
+
+
+@app.get("/sitemap.xml")
+async def sitemap_xml():
+    """sitemap.xml — homepage + every cached report. Updates automatically
+    as the GCS cache evolves; stale entries (>14 days) are filtered out
+    of the listing inside ``list_all_slugs``."""
+    base = DAYCARE_PUBLIC_URL.rstrip("/")
+    try:
+        from cache_service import list_all_slugs
+        rows = list_all_slugs()
+    except Exception:
+        log.warning("sitemap_list_failed", exc_info=True)
+        rows = []
+
+    # Plain ASCII generation — sitemap.xml goes to robots so we keep it
+    # tiny and predictable (no f-string template escaping pitfalls).
+    parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    parts.append(
+        f"<url><loc>{base}/</loc><lastmod>{today}</lastmod>"
+        "<changefreq>daily</changefreq><priority>1.0</priority></url>"
+    )
+    parts.append(
+        f"<url><loc>{base}/legal.html</loc><changefreq>monthly</changefreq>"
+        "<priority>0.3</priority></url>"
+    )
+    for r in rows:
+        slug = r.get("slug") or ""
+        if not slug:
+            continue
+        last = (r.get("completed_at") or "")[:10] or today
+        parts.append(
+            f"<url><loc>{base}/r/{slug}</loc>"
+            f"<lastmod>{last}</lastmod>"
+            "<changefreq>weekly</changefreq><priority>0.8</priority></url>"
+        )
+    parts.append("</urlset>")
+    return Response(
+        content="\n".join(parts),
+        media_type="application/xml",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@app.get("/robots.txt", response_class=HTMLResponse)
+async def robots_txt():
+    """robots.txt — allow crawlers everywhere except /api/*, point at the
+    sitemap. Mounting at the FastAPI route layer (not StaticFiles) so it
+    can use DAYCARE_PUBLIC_URL even when behind a proxy."""
+    base = DAYCARE_PUBLIC_URL.rstrip("/")
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Allow: /r/\n"
+        "Disallow: /api/\n"
+        f"Sitemap: {base}/sitemap.xml\n"
+    )
+    return Response(
+        content=body,
+        media_type="text/plain",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 # ── Static frontend ──────────────────────────────────────────────────────────

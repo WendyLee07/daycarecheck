@@ -2263,6 +2263,97 @@ async def sitemap_xml():
     )
 
 
+@app.get("/llms.txt", response_class=HTMLResponse)
+async def llms_txt():
+    """LLM-friendly markdown index per the emerging llms.txt convention.
+
+    Tells LLM crawlers (GPTBot, ClaudeBot, PerplexityBot, etc.) what this
+    site is, what its key URLs look like, and lists currently-cached
+    reports so they can pull samples for grounding. Plain markdown so any
+    LLM can parse it without rendering JS.
+
+    Refreshed dynamically: the report-list section reflects whatever's in
+    the cache RIGHT NOW (14-day TTL), so newly-completed reports show up
+    on the next crawl without us touching anything.
+    """
+    base = DAYCARE_PUBLIC_URL.rstrip("/")
+    try:
+        from cache_service import list_all_slugs
+        rows = list_all_slugs()
+    except Exception:
+        log.warning("llms_list_failed", exc_info=True)
+        rows = []
+
+    lines = [
+        "# Daycare Check",
+        "",
+        "> Free public-record background checks on any U.S. daycare. "
+        "Pulls licensing, inspection violations, ownership chain, and "
+        "incident history from authoritative public sources (state "
+        "regulators, federal court records, SEC EDGAR, NAEYC, mainstream "
+        "press) into a single cited report. CC0 public domain.",
+        "",
+        "## What this site does",
+        "",
+        "- A user enters a U.S. daycare name + their email.",
+        "- An AI agent on the Agentic Commons public-good network pulls "
+        "every public record on that daycare.",
+        "- A formal HTML report is generated with every claim linked to "
+        "its original source.",
+        "- The report is cached for 14 days and emailed to the user.",
+        "",
+        "## Key URLs",
+        "",
+        f"- {base}/ — homepage + search form",
+        f"- {base}/r/{{slug}} — permalink to a completed report",
+        f"- {base}/sitemap.xml — full URL index of cached reports",
+        f"- {base}/robots.txt — crawler policy (all major LLM bots allowed)",
+        "",
+        "## Data sources we pull from",
+        "",
+        "- 50 U.S. state child-care licensing portals",
+        "- Federal court records (PACER, DoJ press releases)",
+        "- SEC EDGAR (for publicly-held daycare operators)",
+        "- NAEYC accreditation database",
+        "- Library of Congress / Congressional Research Service",
+        "- U.S. Senate investigations (Sen. Merkley's daycare probes)",
+        "- Mainstream press archives",
+        "",
+        "## How agents should use this site",
+        "",
+        "Each report is a self-contained, cited document. Citations point "
+        "to primary sources; treat those sources as the authoritative "
+        "data, not our summary. To check whether a specific daycare has "
+        "been reported on, scan the sitemap or the report list below.",
+        "",
+        "## Recent reports",
+        "",
+    ]
+    if rows:
+        for r in rows[:50]:
+            slug = r.get("slug")
+            name = r.get("daycare_name") or slug
+            if slug:
+                lines.append(f"- [{name}]({base}/r/{slug})")
+    else:
+        lines.append("(no cached reports right now — submit a daycare on "
+                     "the homepage to generate one)")
+    lines.append("")
+    lines.append("## Project")
+    lines.append("")
+    lines.append(
+        "Daycare Check is a public-good prototype on the Agentic Commons "
+        "network (https://agentic-commons.org). The agents that produce "
+        "these reports volunteer their compute time; nothing is paid, no "
+        "data is sold, no user accounts exist."
+    )
+    return Response(
+        content="\n".join(lines) + "\n",
+        media_type="text/markdown; charset=utf-8",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
 @app.get("/robots.txt", response_class=HTMLResponse)
 async def robots_txt():
     """robots.txt — allow crawlers everywhere except /api/*, point at the
@@ -2275,6 +2366,10 @@ async def robots_txt():
         "Allow: /r/\n"
         "Disallow: /api/\n"
         f"Sitemap: {base}/sitemap.xml\n"
+        # llms.txt is the emerging convention for LLM-friendly site indexes.
+        # Not part of the original robots.txt RFC but supported by some
+        # bots and useful as a discoverability hint.
+        f"# LLM index: {base}/llms.txt\n"
     )
     return Response(
         content=body,
